@@ -6,3 +6,5 @@
 [gitlog.txt](https://github.com/anroysko/otm-harjoitustyo/blob/master/laskarit/viikko1/gitlog.txt)
 
 Muutos!
+
+Muutos 2!
