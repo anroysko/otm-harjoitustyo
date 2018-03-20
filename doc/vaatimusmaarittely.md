@@ -7,7 +7,7 @@ Sovellus on suppeampi versio Amiga-pelistä Emerald Mine. Siinä kaivetaan kaksi
 
 ## Suunnitellut toiminnallisuudet
 
-### pelin mekaniikat
+### Pelin mekaniikat
 
 * Kuusi eri palikkatyyppiä:
   - seinä
@@ -33,16 +33,16 @@ Sovellus on suppeampi versio Amiga-pelistä Emerald Mine. Siinä kaivetaan kaksi
 
 ### Main menu
 
-Menussa voi valita Kentän listasta, tai poistua ohjelmasta.
+Menussa voi valita pelattavan kentän listasta, tai poistua ohjelmasta.
 
 Ohjelma lataa kentät automaattisesti. Ne tallennetaan tekstitiedostoina.
 
 ## Kehitysideat
 
-* Kenttäeditori
+* kenttäeditori
 
-* Musiikki
+* musiikki
 
-* Replayt ja high scoret
+* replayt ja high scoret
 
 * Lisää erilaisia blockeja
