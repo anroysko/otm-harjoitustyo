@@ -9,13 +9,13 @@ Sovellus on suppeampi versio amiga-pelistä emerald mine. Siinä kaivetaan 2d ti
 
 ### pelin mekaniikat
 
-Kuusi eri block-tyyppiä:
-- Seinä
-- Hiekka
-- Timantti
-- Kivi
-- Uloskäynti
-- Tyhjä ruutu
+* Kuusi eri block-tyyppiä:
+  - Seinä
+  - Hiekka
+  - Timantti
+  - Kivi
+  - Uloskäynti
+  - Tyhjä ruutu
 
 * Jokaisessa kentässä on aikaraja. Kun ylittää aikarajan, häviää.
 
