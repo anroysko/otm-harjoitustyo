@@ -11,5 +11,6 @@ Teen harjoitustyön C++:lla.
 
 ## Dokumentaatio
 [Tuntikirjanpito.md](https://github.com/anroysko/otm-harjoitustyo/blob/master/doc/tuntikirjanpito.md)
+
 [vaatimusmaarittely.md](https://github.com/anroysko/otm-harjoitustyo/blob/master/doc/vaatimusmaarittely.md)
 
