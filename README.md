@@ -1,5 +1,6 @@
 # OTM-harjoitustyö
 Teen harjoitustyön C++:lla.
+
 ## Tehtävät
 ### Viikko 1
 [komentorivi.txt](https://github.com/anroysko/otm-harjoitustyo/blob/master/laskarit/viikko1/komentorivi.txt)
@@ -9,5 +10,6 @@ Teen harjoitustyön C++:lla.
 [Unicafe](https://github.com/anroysko/otm-harjoitustyo/tree/master/laskarit/viikko2/Unicafe)
 
 ## Dokumentaatio
-[Tuntikirjanpito.md](https://github.com/anroysko/otm-harjoitustyo/blob/master/documentation/tuntikirjanpito.md)
+[Tuntikirjanpito.md](https://github.com/anroysko/otm-harjoitustyo/blob/master/doc/tuntikirjanpito.md)
+[vaatimusmaarittely.md](https://github.com/anroysko/otm-harjoitustyo/blob/master/doc/vaatimusmaarittely.md)
 
