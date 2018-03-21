@@ -7,7 +7,7 @@ Teen harjoitustyön C++:lla.
 
 [gitlog.txt](https://github.com/anroysko/otm-harjoitustyo/blob/master/laskarit/viikko1/gitlog.txt)
 ### Viikko 2
-[Unicafe](https://github.com/anroysko/otm-harjoitustyo/tree/master/laskarit/viikko2/Unicafe)
+[testikattavuus.png](https://github.com/anroysko/otm-harjoitustyo/blob/master/laskarit/viikko2/testikattavuus.png)
 
 ## Dokumentaatio
 [Tuntikirjanpito.md](https://github.com/anroysko/otm-harjoitustyo/blob/master/doc/tuntikirjanpito.md)
