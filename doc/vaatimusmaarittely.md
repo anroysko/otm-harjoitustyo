@@ -1,46 +1,48 @@
 # Vaatimusmäärittely
 
 ## Sovelluksen tarkoitus
-Sovellus on suppeampi versio amiga-pelistä emerald mine. Siinä kaivetaan 2d tile-based luolassa timantteja, joita kerättyään tarpeeksi pitää keretä kentän uloskäynnille aikarajassa.
+Sovellus on suppeampi versio Amiga-pelistä Emerald Mine. Siinä kaivetaan kaksiulotteisessa ruutupohjaisessa luolassa timantteja, joita kerättyään tarpeeksi pitää keretä kentän uloskäynnille aikarajassa. Peli on reaaliaikainen.
 
 ![Image from Emerald mine](https://www.emuparadise.me/GameBase%20Amiga/Screenshots/E/Emerald_Mine_2.png)
 
 ## Suunnitellut toiminnallisuudet
 
-### pelin mekaniikat
+### Pelin mekaniikat
 
-Kuusi eri block-tyyppiä:
-- Seinä
-- Hiekka
-- Timantti
-- Kivi
-- Uloskäynti
-- Tyhjä ruutu
+* Kuusi eri palikkatyyppiä:
+  - seinä
+  - hiekka
+  - timantti
+  - kivi
+  - uloskäynti
+  - tyhjä ruutu
 
 * Jokaisessa kentässä on aikaraja. Kun ylittää aikarajan, häviää.
 
 * Jos kivi tippuu pelaajan tai timantin päälle, pelaaja tai timantti tuhoutuu.
 
-* Jos timantti tai kivi on pyöreän objektin päällä, se kaatuu satunnaiselle puolelle. Timantit, kivet ja uloskäynnit ovat pyöreitä objekteja.
+* Jos timantti tai kivi on pyöreän objektin päällä, se vierii satunnaiseen viereiseen tyhjään ruutuun, jonka alla on tyhjä ruutu. Timantit, kivet ja uloskäynnit ovat pyöreitä objekteja.
 
 * Jos kiven tai timantin alla ei ole mitään, se tippuu.
 
-* Kun pelaaja kävelee hiekan tai timantin yli, se katoaa, ja jos se oli timantti, se keräytyy.
+* Kun pelaaja kävelee hiekan tai timantin yli, se poistuu. Jos se oli timantti, se keräytyy.
 
 * Kun pelaaja kerää kentästä riippuvan määrän timantteja, uloskäynti aukeaa.
 
+* Pelaaja voi vierittää kiven viereiseen tyhjään ruutuun kävellemällä sitä päin sivulta
+
 ### Main menu
 
-Menussa voi valita Kentän listasta, tai poistua ohjelmasta.
+Menussa voi valita pelattavan kentän listasta, tai poistua ohjelmasta.
 
 Ohjelma lataa kentät automaattisesti. Ne tallennetaan tekstitiedostoina.
 
 ## Kehitysideat
 
-* Kenttäeditori
+* kenttäeditori
 
-* Musiikki
+* musiikki
 
-* Replayt ja high scoret
+* replayt ja high scoret
 
 * Lisää erilaisia blockeja
