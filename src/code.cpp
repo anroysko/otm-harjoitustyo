@@ -11,6 +11,20 @@
 #include <GLFW/glfw3.h>	// glfw 3
 
 // GAME LOGIC
+// Struct that contains everything needed to draw the time step
+// We make one of these every time step, so like three times a second
+struct DrawData {
+	int width;
+	int height;
+	int px;
+	int py;
+	int pdx;
+	int pdy;
+	std::vector<int> dx;
+	std::vector<int> dy;
+	std::vector<int> tex;
+};
+
 // END GAME LOGIC
 
 // DRAW LOGIC
@@ -235,6 +249,57 @@ GLint makeProgram(std::string& vertex_shader_path, std::string& fragment_shader_
 	}
 	return program_id;
 }
+
+const int ATLAS_WIDTH = 4;
+const int ATLAS_HEIGHT = 4;
+const GLfloat WIDTH_MULT = 1.0 / ATLAS_WIDTH;
+const GLfloat HEIGHT_MULT = 1.0 / ATLAS_HEIGHT;
+
+void initDrawStep(GLuint vertex_buffer_id, GLuint uv_buffer_id, GLuint dxy_buffer_id, DrawData& data) {
+	std::vector<GLfloat> vertex_buffer_data (2 * 6 * data.width * data.height);
+	std::vector<GLfloat> uv_buffer_data (2 * 6 * data.width * data.height);
+	std::vector<GLfloat> dxy_buffer_data (2 * 6 * data.width * data.height);
+
+	std::vector<int> help = {
+		0,0,
+		0,1,
+		1,0,
+		1,1,
+		0,1,
+		1,0
+	};
+	for (int y = 0; y < data.height; ++y) {
+		for (int x = 0; x < data.width; ++x) {
+			std::vector<GLfloat> vertex_x = {(GLfloat)x, (GLfloat)x+1};
+			std::vector<GLfloat> vertex_y = {(GLfloat)((data.height-1) - y), (GLfloat)(data.height-y)};
+
+			int i = x + data.width * y;
+			int th = (ATLAS_HEIGHT - 1) - (data.tex[i] / ATLAS_HEIGHT);
+			int tw = data.tex[i] % ATLAS_HEIGHT;
+			std::vector<GLfloat> uv_u = {tw*WIDTH_MULT, (tw+1)*WIDTH_MULT};
+			std::vector<GLfloat> uv_v = {th*HEIGHT_MULT, (th+1)*HEIGHT_MULT};
+
+			int base = 12 * i;
+			for (int j = 0; j < 6; ++j) {
+				vertex_buffer_data[	base + 2*j + 0] = vertex_x[help[2*j + 0]];
+				uv_buffer_data[		base + 2*j + 0] = uv_u[help[2*j + 0]];
+				dxy_buffer_data[	base + 2*j + 0] = data.dx[i];
+				
+				vertex_buffer_data[	base + 2*j + 1] = vertex_y[help[2*j + 1]];
+				uv_buffer_data[		base + 2*j + 1] = uv_v[help[2*j + 1]];
+				dxy_buffer_data[	base + 2*j + 1] = -data.dy[i];
+			}
+		}
+	}
+
+	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_id);
+	glBufferData(GL_ARRAY_BUFFER, vertex_buffer_data.size() * sizeof(GLfloat), &vertex_buffer_data[0], GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, uv_buffer_id);
+	glBufferData(GL_ARRAY_BUFFER, uv_buffer_data.size() * sizeof(GLfloat), &uv_buffer_data[0], GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, dxy_buffer_id);
+	glBufferData(GL_ARRAY_BUFFER, dxy_buffer_data.size() * sizeof(GLfloat), &dxy_buffer_data[0], GL_STATIC_DRAW);
+}
+
 // END DRAW LOGIC
 
 int main() {
@@ -265,39 +330,45 @@ int main() {
 	GLint texture_id = loadBMP(texture_path);
 	GLint texture_sampler_id = glGetUniformLocation(program_id, "texture_sampler");
 
-	// Some data for testing
-	std::vector<GLfloat> vertex_buffer_data = {
-		-1.0f,	-1.0f,	0.0f,
-		1.0f,	1.0f,	0.0f,
-		1.0f,	-1.0f,	0.0f,
-		-1.0f,	-1.0f,	0.0f,
-		1.0f,	1.0f,	0.0f,
-		-1.0f,	1.0f,	0.0f
-	};
+	GLint map_scale_id = glGetUniformLocation(program_id, "map_scale");
+	GLint move_scale_id = glGetUniformLocation(program_id, "move_scale");
+	GLint player_pos_id = glGetUniformLocation(program_id, "player_pos");
+
+	// Drawing things for testing
 	/*
-	std::vector<GLfloat> vertex_buffer_data = {
-		-0.5f,	-0.5f,	0.0f,
-		0.5f,	0.5f,	0.0f,
-		0.5f,	-0.5f,	0.0f,
-		-0.5f,	-0.5f,	0.0f,
-		0.5f,	0.5f,	0.0f,
-		-0.5f,	0.5f,	0.0f
-	};
-	*/
-	std::vector<GLfloat> uv_buffer_data (12);
-	for (int i = 0; i < 6; ++i) {
-		uv_buffer_data[2 * i] = (vertex_buffer_data[3 * i] + 1.0) / 2.0;
-		uv_buffer_data[2 * i + 1] = (vertex_buffer_data[3 * i + 1] + 1.0) / 2.0;
+	struct DrawData {
+		int width;
+		int height;
+		int px;
+		int py;
+		int pdx;
+		int pdy;
+		std::vector<int> dx;
+		std::vector<int> dy;
+		std::vector<int> tex;
 	}
+	*/
+	DrawData data;
+	data.width = 3;
+	data.height = 3;
+	data.px = 1;
+	data.py = 1;
+	data.pdx = 0;
+	data.pdy = 0;
+	data.dx = {0, 0, 0, 1, 0,-1, 0, 0, 0};
+	data.dy = {0, 1, 0, 0,-1, 0, 0, 0, 1};
+	data.tex ={0, 1, 2, 3, 4, 5, 6, 7, 8};
+
 	GLuint vertex_buffer_id;
 	glGenBuffers(1, &vertex_buffer_id);
-	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_id);
-	glBufferData(GL_ARRAY_BUFFER, vertex_buffer_data.size() * sizeof(GLfloat), &vertex_buffer_data[0], GL_STATIC_DRAW);
 	
 	GLuint uv_buffer_id;
 	glGenBuffers(1, &uv_buffer_id);
-	glBindBuffer(GL_ARRAY_BUFFER, uv_buffer_id);
-	glBufferData(GL_ARRAY_BUFFER, uv_buffer_data.size() * sizeof(GLfloat), &uv_buffer_data[0], GL_STATIC_DRAW);
+
+	GLuint dxy_buffer_id;
+	glGenBuffers(1, &dxy_buffer_id);
+
+	initDrawStep(vertex_buffer_id, uv_buffer_id, dxy_buffer_id, data);
 
 	/*
 	// Draw the testing data
@@ -310,33 +381,44 @@ int main() {
 	// DYNAMIC: The data store contents will be modified repeatedly and used many times.
 	glBufferData(GL_ARRAY_BUFFER, vertex_buffer_data.size() * sizeof(GLfloat), &vertex_buffer_data[0], GL_STATIC_DRAW);
 	*/
+	glUseProgram(program_id);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture_id);
+	glUniform1i(texture_sampler_id, 0);
 
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
+	int tick = 0;
 	while(true) {
 		glClear( GL_COLOR_BUFFER_BIT );
-		glUseProgram(program_id);
 		// glVertexAttribPointer ( https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glVertexAttribPointer.xhtml )
 		// Parameters: index (in vao), size (number of components), type (of each component),
 		// 	normalized (should data be normalized when accessed), stride (byte offset between values in array), pointer (offset to first value)
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture_id);
-		glUniform1i(texture_sampler_id, 0);
-
 		glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_id);
 		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*) 0);
+		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, (void*) 0);
 		
 		glBindBuffer(GL_ARRAY_BUFFER, uv_buffer_id);
 		glEnableVertexAttribArray(1);
 		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*) 0);
+		
+		glBindBuffer(GL_ARRAY_BUFFER, dxy_buffer_id);
+		glEnableVertexAttribArray(2);
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*) 0);
+	
+		glUniform1f(move_scale_id, tick / 59.0);
+		glUniform2f(map_scale_id, 1 / 10.0, 1 / 10.0);
+		glUniform2f(player_pos_id, 1.5, 1.5);
+
 		// glDrawArrays( https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glDrawArrays.xhtml )
 		// Parameters: type, first (vertex) to render, amount (of vertices) to render
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glDrawArrays(GL_TRIANGLES, 0, data.width * data.height * 6);
 		
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);
 
 		glfwSwapBuffers(window);
+		++tick;
+		if (tick > 120 + 59) tick = 0;
 		glfwPollEvents();
 		if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) break;
 	}
