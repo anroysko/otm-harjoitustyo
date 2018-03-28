@@ -327,7 +327,7 @@ int main() {
 	}
 
 	// Load texture
-	std::string texture_path = "testing.bmp";
+	std::string texture_path = "atlas.bmp";
 	GLint texture_id = loadBMP(texture_path);
 	GLint texture_sampler_id = glGetUniformLocation(program_id, "texture_sampler");
 
@@ -356,9 +356,9 @@ int main() {
 	data.py = 1;
 	data.pdx = 0;
 	data.pdy = 0;
-	data.dx = {0, 0, 0, 1, 0,-1, 0, 0, 0};
-	data.dy = {0, 1, 0, 0,-1, 0, 0, 0, 1};
-	data.tex ={0, 1, 2, 3, 4, 5, 6, 7, 8};
+	data.dx = {0, 0, 0,-1, 0, 0, 0, 0, 0};
+	data.dy = {0,-1, 1, 0, 0, 1, 0, 1, 1};
+	data.tex= {0, 1, 2, 5, 6, 3, 7, 8, 4};
 
 	GLuint vertex_buffer_id;
 	glGenBuffers(1, &vertex_buffer_id);
@@ -418,8 +418,8 @@ int main() {
 		glDisableVertexAttribArray(1);
 
 		glfwSwapBuffers(window);
-		++tick;
-		if (tick > 64) tick = 0;
+		tick += 4;
+		if (tick > 5 * 64) tick = 0;
 		glfwPollEvents();
 		if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) break;
 	}
