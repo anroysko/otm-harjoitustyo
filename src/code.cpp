@@ -74,47 +74,11 @@ GLFWwindow* initGraphics() {
 	return window;
 }
 
-/*
-GLuint loadBMP(const std::string image_path) {
-        std::vector<unsigned char> header (54);
-        FILE* file = fopen(image_path.c_str(), "rb");
-        assert(file != 0);
-        assert(fread(&header[0], 1, 54, file) == 54);
-
-        assert(header[0] == 'B' && header[1] == 'M');
-        unsigned int data_pos   = *(int*)&(header[0x0A]);
-        unsigned int width      = *(int*)&(header[0x12]);
-        unsigned int height     = *(int*)&(header[0x16]);
-        unsigned int image_size = *(int*)&(header[0x22]);
-        if (image_size == 0) image_size = width * height * 3;
-        if (data_pos == 0) data_pos = 54;
-
-        std::vector<unsigned char> data (image_size);
-        assert(fread(&data[0], 1, image_size, file) == image_size);
-        fclose(file);
-
-        GLuint texture_id;
-        glGenTextures(1, &texture_id);
-        glBindTexture(GL_TEXTURE_2D, texture_id);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, &data[0]);
-
-        // simple filtering
-        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-        // mipmap filtering
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glGenerateMipmap(GL_TEXTURE_2D);
-        return texture_id;
-}
-*/
-
 // Read a bmp
 GLint loadBMP(std::string file_path) {
 	std::vector<unsigned char> header (54);
 	std::ifstream fin;
-	fin.open(file_path);
+	fin.open(file_path, std::ios::in | std::ios::binary);
 	if (! fin.is_open()) {
 		std::cout << "Failed to open bmp file " << file_path << '\n';
 		return -1;
@@ -140,6 +104,7 @@ GLint loadBMP(std::string file_path) {
 	if (data_pos == 0) data_pos = 54;
 
 	std::vector<unsigned char> data (image_size);
+	fin.seekg(data_pos);
 	fin.read(reinterpret_cast<char*>(&data[0]), image_size);
 	if (! fin.good()) {
 		std::cout << "Failed to read bmp data from file " << file_path << '\n';
@@ -302,6 +267,15 @@ int main() {
 
 	// Some data for testing
 	std::vector<GLfloat> vertex_buffer_data = {
+		-1.0f,	-1.0f,	0.0f,
+		1.0f,	1.0f,	0.0f,
+		1.0f,	-1.0f,	0.0f,
+		-1.0f,	-1.0f,	0.0f,
+		1.0f,	1.0f,	0.0f,
+		-1.0f,	1.0f,	0.0f
+	};
+	/*
+	std::vector<GLfloat> vertex_buffer_data = {
 		-0.5f,	-0.5f,	0.0f,
 		0.5f,	0.5f,	0.0f,
 		0.5f,	-0.5f,	0.0f,
@@ -309,6 +283,7 @@ int main() {
 		0.5f,	0.5f,	0.0f,
 		-0.5f,	0.5f,	0.0f
 	};
+	*/
 	std::vector<GLfloat> uv_buffer_data (12);
 	for (int i = 0; i < 6; ++i) {
 		uv_buffer_data[2 * i] = (vertex_buffer_data[3 * i] + 1.0) / 2.0;
