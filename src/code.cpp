@@ -4,9 +4,16 @@
 #include <sstream>	// std::stringstream
 #include <vector>	// std::vector
 
+#include <assert.h>	// tmp
+#include <stdio.h>	// stuff
+
 #include <GL/glew.h>	// glew 2
 #include <GLFW/glfw3.h>	// glfw 3
 
+// GAME LOGIC
+// END GAME LOGIC
+
+// DRAW LOGIC
 // Inits opengl and stuff
 // returns null pointer if initialization fails
 GLFWwindow* initGraphics() {
@@ -66,6 +73,97 @@ GLFWwindow* initGraphics() {
 	// Successful initialization
 	return window;
 }
+
+/*
+GLuint loadBMP(const std::string image_path) {
+        std::vector<unsigned char> header (54);
+        FILE* file = fopen(image_path.c_str(), "rb");
+        assert(file != 0);
+        assert(fread(&header[0], 1, 54, file) == 54);
+
+        assert(header[0] == 'B' && header[1] == 'M');
+        unsigned int data_pos   = *(int*)&(header[0x0A]);
+        unsigned int width      = *(int*)&(header[0x12]);
+        unsigned int height     = *(int*)&(header[0x16]);
+        unsigned int image_size = *(int*)&(header[0x22]);
+        if (image_size == 0) image_size = width * height * 3;
+        if (data_pos == 0) data_pos = 54;
+
+        std::vector<unsigned char> data (image_size);
+        assert(fread(&data[0], 1, image_size, file) == image_size);
+        fclose(file);
+
+        GLuint texture_id;
+        glGenTextures(1, &texture_id);
+        glBindTexture(GL_TEXTURE_2D, texture_id);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, &data[0]);
+
+        // simple filtering
+        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+        // mipmap filtering
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glGenerateMipmap(GL_TEXTURE_2D);
+        return texture_id;
+}
+*/
+
+// Read a bmp
+GLint loadBMP(std::string file_path) {
+	std::vector<unsigned char> header (54);
+	std::ifstream fin;
+	fin.open(file_path);
+	if (! fin.is_open()) {
+		std::cout << "Failed to open bmp file " << file_path << '\n';
+		return -1;
+	}
+	fin.read(reinterpret_cast<char*>(&header[0]), 54);
+	if (! fin.good()) {
+		std::cout << "Failed to read bmp header from file " << file_path << '\n';
+		fin.close();
+		return -1;
+	}
+
+	if (header[0] != 'B' || header[1] != 'M') {
+		std::cout << "Not a bmp file: " << file_path << '\n';
+		fin.close();
+		return -1;
+	}
+
+	unsigned int data_pos   = *(int*)&(header[0x0A]);
+	unsigned int width      = *(int*)&(header[0x12]);
+	unsigned int height     = *(int*)&(header[0x16]);
+	unsigned int image_size = *(int*)&(header[0x22]);
+	if (image_size == 0) image_size = width * height * 3;
+	if (data_pos == 0) data_pos = 54;
+
+	std::vector<unsigned char> data (image_size);
+	fin.read(reinterpret_cast<char*>(&data[0]), image_size);
+	if (! fin.good()) {
+		std::cout << "Failed to read bmp data from file " << file_path << '\n';
+		fin.close();
+		return -1;	
+	}
+	fin.close();
+
+	GLuint texture_id;
+	glGenTextures(1, &texture_id);
+	glBindTexture(GL_TEXTURE_2D, texture_id);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, &data[0]);
+
+	// simple filtering
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+	// mipmap filtering
+	// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	// glGenerateMipmap(GL_TEXTURE_2D);
+	return texture_id;
+}
+
 
 // reads contents of file to a string
 std::string readFile(std::string file_path) {
@@ -172,6 +270,7 @@ GLint makeProgram(std::string& vertex_shader_path, std::string& fragment_shader_
 	}
 	return program_id;
 }
+// END DRAW LOGIC
 
 int main() {
 	GLFWwindow* window = initGraphics();
@@ -196,15 +295,36 @@ int main() {
 		return 2;
 	}
 
+	// Load texture
+	std::string texture_path = "testing.bmp";
+	GLint texture_id = loadBMP(texture_path);
+	GLint texture_sampler_id = glGetUniformLocation(program_id, "texture_sampler");
+
 	// Some data for testing
 	std::vector<GLfloat> vertex_buffer_data = {
 		-0.5f,	-0.5f,	0.0f,
+		0.5f,	0.5f,	0.0f,
 		0.5f,	-0.5f,	0.0f,
-		0.0f,	0.5f,	0.0f
+		-0.5f,	-0.5f,	0.0f,
+		0.5f,	0.5f,	0.0f,
+		-0.5f,	0.5f,	0.0f
 	};
+	std::vector<GLfloat> uv_buffer_data (12);
+	for (int i = 0; i < 6; ++i) {
+		uv_buffer_data[2 * i] = (vertex_buffer_data[3 * i] + 1.0) / 2.0;
+		uv_buffer_data[2 * i + 1] = (vertex_buffer_data[3 * i + 1] + 1.0) / 2.0;
+	}
 	GLuint vertex_buffer_id;
 	glGenBuffers(1, &vertex_buffer_id);
+	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_id);
+	glBufferData(GL_ARRAY_BUFFER, vertex_buffer_data.size() * sizeof(GLfloat), &vertex_buffer_data[0], GL_STATIC_DRAW);
 	
+	GLuint uv_buffer_id;
+	glGenBuffers(1, &uv_buffer_id);
+	glBindBuffer(GL_ARRAY_BUFFER, uv_buffer_id);
+	glBufferData(GL_ARRAY_BUFFER, uv_buffer_data.size() * sizeof(GLfloat), &uv_buffer_data[0], GL_STATIC_DRAW);
+
+	/*
 	// Draw the testing data
 	// Change active buffer
 	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_id);
@@ -214,6 +334,7 @@ int main() {
 	// STATIC : The data store contents will be modified once and used many times.
 	// DYNAMIC: The data store contents will be modified repeatedly and used many times.
 	glBufferData(GL_ARRAY_BUFFER, vertex_buffer_data.size() * sizeof(GLfloat), &vertex_buffer_data[0], GL_STATIC_DRAW);
+	*/
 
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 	while(true) {
@@ -222,18 +343,29 @@ int main() {
 		// glVertexAttribPointer ( https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glVertexAttribPointer.xhtml )
 		// Parameters: index (in vao), size (number of components), type (of each component),
 		// 	normalized (should data be normalized when accessed), stride (byte offset between values in array), pointer (offset to first value)
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture_id);
+		glUniform1i(texture_sampler_id, 0);
+
+		glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_id);
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*) 0);
+		
+		glBindBuffer(GL_ARRAY_BUFFER, uv_buffer_id);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*) 0);
 		// glDrawArrays( https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glDrawArrays.xhtml )
 		// Parameters: type, first (vertex) to render, amount (of vertices) to render
-		glDrawArrays(GL_TRIANGLES, 0, 9);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
 		
 		glDisableVertexAttribArray(0);
+		glDisableVertexAttribArray(1);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 		if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) break;
 	}
+	
 	glfwTerminate();
 	return 0;
 }
