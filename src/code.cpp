@@ -65,7 +65,8 @@ GLFWwindow* initGraphics() {
 	int screen_height = mode->height;
 	// http://www.glfw.org/docs/latest/group__window.html#ga5c336fddf2cbb5b92f65f10fb6043344
 	// Parameters: width, height, title, monitor, share
-	GLFWwindow* window = glfwCreateWindow(screen_width, screen_height, "temporary testing", 0, 0);
+	// GLFWwindow* window = glfwCreateWindow(screen_width, screen_height, "temporary testing", 0, 0);
+	GLFWwindow* window = glfwCreateWindow(512, 512, "temporary testing", 0, 0);
 	if (window == 0) {
 		std::cout << "Failed to create window\n";
 		return 0;
@@ -405,9 +406,9 @@ int main() {
 		glEnableVertexAttribArray(2);
 		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*) 0);
 	
-		glUniform1f(move_scale_id, tick / 59.0);
-		glUniform2f(map_scale_id, 1 / 10.0, 1 / 10.0);
-		glUniform2f(player_pos_id, 1.5, 1.5);
+		glUniform1f(move_scale_id, tick / 64.0);
+		glUniform2f(map_scale_id, 1 / 4.0, 1 / 4.0);
+		glUniform2f(player_pos_id, 1.0, 1.0);
 
 		// glDrawArrays( https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glDrawArrays.xhtml )
 		// Parameters: type, first (vertex) to render, amount (of vertices) to render
@@ -418,7 +419,7 @@ int main() {
 
 		glfwSwapBuffers(window);
 		++tick;
-		if (tick > 120 + 59) tick = 0;
+		if (tick > 64) tick = 0;
 		glfwPollEvents();
 		if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) break;
 	}
