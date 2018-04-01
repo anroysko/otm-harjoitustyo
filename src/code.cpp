@@ -20,6 +20,14 @@ struct Sprite {
 	int dx;
 	int dy;
 	int tex;
+
+	Sprite(int x_coord, int y_coord, int delta_x, int delta_y, int texture) {
+		x = x_coord;
+		y = y_coord;
+		dx = delta_x;
+		dy = delta_y;
+		tex = texture;
+	}
 };
 
 struct DrawData {
@@ -49,7 +57,49 @@ struct Level {
 	int needed_score;
 	std::vector<int> state; // Block type for this block
 
+	int pdx = 0;
+	int pdy = 0;
+
+	bool can_move_up(int i, std::vector<bool>& moved) {
+		return (!moved[i]) && (state[i] == PLAYER) && (pdy == -1) && ((state[i-width] == EMPTY) || (state[i-width] == SAND));
+	}
+	bool can_move_left(int i, std::vector<bool>& moved) {
+		if (moved[i]) return false;
+		if (state[i] == PLAYER) {
+			return (pdx == -1) && (state[i-1] == EMPTY || state[i-1] == SAND);
+		}
+		if (state[i] == ROCK) {
+			return (pdx == -1) && (state[i-1] == EMPTY) && (state[i+1] == PLAYER);
+		}
+		return false;
+	}
+	bool can_move_right(int i, std::vector<bool>& moved) {
+		if (moved[i]) return false;
+		if (state[i] == PLAYER) {
+			return (pdx == 1) && (state[i+1] == EMPTY || state[i+1] == SAND);
+		}
+		if (state[i] == ROCK) {
+			return (pdx == 1) && (state[i+1] == EMPTY) && (state[i-1] == PLAYER);
+		}
+		return false;
+	}
+	bool can_move_down(int i, std::vector<bool>& moved) {
+		return (!moved[i]) && (state[i] == PLAYER) && (pdy == 1) && ((state[i+width] == EMPTY) || (state[i+width] == SAND));
+	}
+	bool can_fall(int i, std::vector<bool>& moved) {
+		return (!moved[i]) && ((state[i] | FALLING_BIT) == (ROCK | FALLING_BIT)) && (state[i+width] == EMPTY || ((state[i+width] == PLAYER) && (state[i] & FALLING_BIT)));
+	}
+	bool can_slide_left(int i, std::vector<bool>& moved) {
+		return (!moved[i]) && (state[i] == ROCK) && (state[i+width] == ROCK) && (state[i-1] == EMPTY) && (state[i-1+width] == EMPTY);
+	}
+	bool can_slide_right(int i, std::vector<bool>& moved) {
+		return (!moved[i]) && (state[i] == ROCK) && (state[i+width] == ROCK) && (state[i+1] == EMPTY) && (state[i+1+width] == EMPTY);
+	}
+
 	DrawData update(int player_dx, int player_dy) {
+		pdx = player_dx;
+		pdy = player_dy;
+		// std::cout << pdx << ' ' << pdy << '\n';
 		DrawData data;
 		data.width = width;
 		data.height = height;
@@ -66,161 +116,87 @@ struct Level {
 		// Step 0. Preprocessing
 		for (int x = 0; x < width; ++x) {
 			for (int y = 0; y < height; ++y) {
-				int i = x + y * width;
-				int ty = y + 1;
-				int ti = x + ty * width;
-				if ((state[i] == ROCK) && (state[ti] == EMPTY)) {
-					state[i] |= FALLING_BIT;
-				}
+				int i = (x + y * width);
+				// Set things that have nothing below them to be falling
+				if (can_fall(i, moved)) state[i] |= FALLING_BIT;
 			}
 		}
-		// Set things that have nothing below them to be falling
-		// Step 1. Things moving to the side
-		for (int x = 0; x < width; ++x) {
-			for (int y = 0; y < height; ++y) {
-				int i = x + y * width;
-				if ( (!moved[i]) && (state[i] == PLAYER) && (player_dx != 0) ) {
-					stack.push_back(i);
-				}
-			}
-		}
+		// Step 1. Moving sideways
+		stack.resize(width * height);
+		for (int i = 0; i < stack.size(); ++i) stack[i] = i;
 		while(! stack.empty()) {
 			int i = stack.back();
 			stack.pop_back();
 			int x = i % width;
 			int y = i / width;
 			// See if it can move
-			if ((state[i] == PLAYER) && (!moved[i])) {
-				int tx = x + player_dx;
-				int ti = tx + y * width;
-				if (state[ti] == EMPTY || state[ti] == SAND) {
-					state[ti] = PLAYER;
-					moved[ti] = true;
-					state[i] = EMPTY;
-					moved[i] = false;
-
-					Sprite player_sprite;
-					player_sprite.x = x;
-					player_sprite.y = y;
-					player_sprite.dx = player_dx;
-					player_sprite.dy = 0;
-					player_sprite.tex = PLAYER;
-					data.sprites.push_back(player_sprite);
-				}
-				
-			}
+			int dx = 0;
+			if (can_move_left(i, moved)) dx = -1;
+			if (can_move_right(i, moved)) dx = 1;
+			if (dx == 0) continue;
+			// Create Sprite
+			Sprite sprite (x, y, dx, 0, state[i] & 15);
+			data.sprites.push_back(sprite);
+			// Update level
+			int ti = i + dx;
+			moved[i] = false;
+			moved[ti] = true;
+			state[ti] = state[i];
+			state[i] = EMPTY;
+			// Update stack
+			stack.push_back(i-dx);
 		}
 		// Step 2. Moving up
-		for (int x = 0; x < width; ++x) {
-			for (int y = 0; y < height; ++y) {
-				int i = x + y * width;
-				if ( (!moved[i]) && (state[i] == PLAYER) && (player_dy == -1) ) {
-					stack.push_back(i);
-				}
-			}
-		}
+		stack.resize(width * height);
+		for (int i = 0; i < stack.size(); ++i) stack[i] = i;
 		while(! stack.empty()) {
 			int i = stack.back();
 			stack.pop_back();
 			int x = i % width;
 			int y = i / width;
 			// See if it can move
-			if ((state[i] == PLAYER) && (!moved[i])) {
-				int ty = y - 1;
-				int ti = x + ty * width;
-				if (state[ti] == EMPTY || state[ti] == SAND) {
-					state[ti] = PLAYER;
-					moved[ti] = true;
-					state[i] = EMPTY;
-					moved[i] = false;
-
-					Sprite player_sprite;
-					player_sprite.x = x;
-					player_sprite.y = y;
-					player_sprite.dx = 0;
-					player_sprite.dy = -1;
-					player_sprite.tex = PLAYER;
-					data.sprites.push_back(player_sprite);
-				}
-				
-			}
+			int dy = 0;
+			if (can_move_up(i, moved)) dy = -1;
+			if (dy == 0) continue;
+			// Create Sprite
+			Sprite sprite (x, y, 0, dy, state[i] & 15);
+			data.sprites.push_back(sprite);
+			// Update level
+			int ti = i + dy * width;
+			moved[i] = false;
+			moved[ti] = true;
+			state[ti] = state[i];
+			state[i] = EMPTY;
+			// Update stack
+			stack.push_back(i-dy*width);
 		}
-		// Step 3. Falling down
-		for (int x = 0; x < width; ++x) {
-			for (int y = 0; y < height; ++y) {
-				int i = x + y * width;
-				if (((state[i] == PLAYER) && (player_dy == 1))) {
-					stack.push_back(i);
-				} else if (state[i] & FALLING_BIT) {
-					stack.push_back(i);
-				} else if ((state[i] == ROCK) && (state[i + width] == EMPTY)) {
-					state[i] |= FALLING_BIT;
-					stack.push_back(i);
-				}
-			}
-		}
+		// Step 3. Falling/Moving down
+		stack.resize(width * height);
+		for (int i = 0; i < stack.size(); ++i) stack[i] = i;
 		while(! stack.empty()) {
 			int i = stack.back();
 			stack.pop_back();
 			int x = i % width;
 			int y = i / width;
 			// See if it can move
-			if (moved[i]) continue;
-			if (state[i] == PLAYER) {
-				int ty = y + 1;
-				int ti = x + ty * width;
-				if (state[ti] == EMPTY || state[ti] == SAND) {
-					state[ti] = PLAYER;
-					moved[ti] = true;
-					state[i] = EMPTY;
-					moved[i] = false;
-					
-					int above_i = (x + (y-1) * width);
-					if (!moved[above_i]) {
-						if ((state[above_i] == PLAYER) && (player_dy == 1)) {
-							stack.push_back(above_i);
-						} else if ((state[above_i] | FALLING_BIT) == (ROCK | FALLING_BIT)) {
-							state[above_i] |= FALLING_BIT;
-							stack.push_back(above_i);
-						}
-					}
-
-					Sprite player_sprite;
-					player_sprite.x = x;
-					player_sprite.y = y;
-					player_sprite.dx = 0;
-					player_sprite.dy = 1;
-					player_sprite.tex = PLAYER;
-					data.sprites.push_back(player_sprite);
-				}
-			} else if ((state[i] | FALLING_BIT) == (ROCK | FALLING_BIT)) {
-				int ty = y + 1;
-				int ti = x + ty * width;
-				if (state[ti] == EMPTY || state[ti] == PLAYER) {
-					state[ti] = ROCK | FALLING_BIT;
-					moved[ti] = true;
-					state[i] = EMPTY;
-					moved[i] = false;
-					
-					int above_i = (x + (y-1) * width);
-					if (!moved[above_i]) {
-						if ((state[above_i] == PLAYER) && (player_dy == 1)) {
-							stack.push_back(above_i);
-						} else if ((state[above_i] | FALLING_BIT) == (ROCK | FALLING_BIT)) {
-							state[above_i] |= FALLING_BIT;
-							stack.push_back(above_i);
-						}
-					}
-					
-					Sprite rock_sprite;
-					rock_sprite.x = x;
-					rock_sprite.y = y;
-					rock_sprite.dx = 0;
-					rock_sprite.dy = 1;
-					rock_sprite.tex = ROCK;
-					data.sprites.push_back(rock_sprite);
-				}
+			int dy = 0;
+			if (can_fall(i, moved)) {
+				dy = 1;
+				state[i] |= FALLING_BIT;
 			}
+			if (can_move_down(i, moved)) dy = 1;
+			if (dy == 0) continue;
+			// Create Sprite
+			Sprite sprite (x, y, 0, dy, state[i] & 15);
+			data.sprites.push_back(sprite);
+			// Update level
+			int ti = i + dy * width;
+			moved[i] = false;
+			moved[ti] = true;
+			state[ti] = state[i];
+			state[i] = EMPTY;
+			// Update stack
+			stack.push_back(i-dy*width);
 		}
 		// Step 3.5. Set still falling things to stop falling
 		for (int x = 0; x < width; ++x) {
@@ -230,67 +206,37 @@ struct Level {
 					moved[i] = true;
 					state[i] &= ~FALLING_BIT;
 					
-					Sprite block_sprite;
-					block_sprite.x = x;
-					block_sprite.y = y;
-					block_sprite.dx = 0;
-					block_sprite.dy = 0;
-					block_sprite.tex = state[i];
-					data.sprites.push_back(block_sprite);
+					Sprite sprite(x, y, 0, 0, state[i] & 15);
+					data.sprites.push_back(sprite);
 				}
 			}
 		}
 		// Step 4. Things rolling to the side
-		for (int x = 0; x < width; ++x) {
-			for (int y = 0; y < height; ++y) {
-				int i = x + y * width;
-				if (moved[i]) continue;
-				// S _
-				// R _
-				bool is_rollable = (state[i] == ROCK);
-				bool is_round = (state[i+width] == ROCK);
-				bool left_empty = (state[i-1] == EMPTY) && (state[i-1+width] == EMPTY);
-				bool right_empty = (state[i+1] == EMPTY) && (state[i+1+width] == EMPTY);
-				if (is_rollable && is_round && (left_empty || right_empty)) stack.push_back(i);
-			}
-		}
+		stack.resize(width * height);
+		for (int i = 0; i < stack.size(); ++i) stack[i] = i;
 		while(! stack.empty()) {
 			int i = stack.back();
 			stack.pop_back();
 			int x = i % width;
 			int y = i / width;
-			if (moved[i]) continue;
-			bool is_rollable = (state[i] == ROCK);
-			bool is_round = (state[i+width] == ROCK);
-			bool left_empty = (state[i-1] == EMPTY) && (state[i-1+width] == EMPTY);
-			bool right_empty = (state[i+1] == EMPTY) && (state[i+1+width] == EMPTY);
-			int rock_dx = 0;
-			if (is_rollable && is_round && left_empty) {
-				rock_dx = -1;
-			} else if (is_rollable && is_round && right_empty) {
-				rock_dx = 1;
-			}
-			if (rock_dx == 0) continue;
-
-			Sprite rock_sprite;
-			rock_sprite.x = x;
-			rock_sprite.y = y;
-			rock_sprite.dx = rock_dx;
-			rock_sprite.dy = 0;
-			rock_sprite.tex = state[i];
-			data.sprites.push_back(rock_sprite);
-			
-			int ti = i + rock_dx;
-			state[ti] = ROCK | FALLING_BIT;
-			moved[ti] = true;
-			state[i] = EMPTY;
+			// See if it can move
+			int dx = 0;
+			if (can_slide_left(i, moved)) dx = -1;
+			if (can_slide_right(i, moved)) dx = 1;
+			if (dx == 0) continue;
+			// Create Sprite
+			Sprite sprite (x, y, dx, 0, state[i] & 15);
+			data.sprites.push_back(sprite);
+			// Update level
+			state[i] |= FALLING_BIT;
+			int ti = i + dx;
 			moved[i] = false;
-
-			stack.push_back(i-1);
-			stack.push_back(i+1);
-			stack.push_back(i-width);
-			stack.push_back(i-width-1);
-			stack.push_back(i-width+1);
+			moved[ti] = true;
+			state[ti] = state[i];
+			state[i] = EMPTY;
+			// Update stack
+			stack.push_back(i-1-width);
+			stack.push_back(i+1-width);
 		}
 		
 		// Step 5. Draw objects that didn't move
@@ -299,13 +245,8 @@ struct Level {
 				int i = x + y * width;
 				if (moved[i] == true) continue;
 				if (state[i] == EMPTY) continue;
-				Sprite block_sprite;
-				block_sprite.x = x;
-				block_sprite.y = y;
-				block_sprite.dx = 0;
-				block_sprite.dy = 0;
-				block_sprite.tex = state[i];
-				data.sprites.push_back(block_sprite);
+				Sprite sprite(x, y, 0, 0, state[i] & 15);
+				data.sprites.push_back(sprite);
 			}
 		}
 		
@@ -751,7 +692,6 @@ int main() {
 		glDisableVertexAttribArray(1);
 
 		glfwSwapBuffers(window);
-		glFinish();
 
 		++tick;
 		if (tick == TICKRATE) {
@@ -759,8 +699,6 @@ int main() {
 				if (down_for[i] >= TICKRATE) {
 					if (curr_press == -1) {
 						curr_press = i;
-					} else {
-						next_press = i;
 					}
 				}
 			}
@@ -780,6 +718,7 @@ int main() {
 			initDrawStep(vertex_buffer_id, uv_buffer_id, dxy_buffer_id, data);
 			
 			/*
+			std::cout << "TIck\n";
 			for (int y = 0; y < state.height; ++y) {
 				for (int x = 0; x < state.width; ++x) {
 					std::cout << state.state[x + y * state.width] << ' ';
