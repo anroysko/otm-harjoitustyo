@@ -633,20 +633,25 @@ int main() {
 
 	// Drawing things for testing
 	Level state;
-	state.width = 9;
-	state.height = 9;
+	state.width = 8;
+	state.height = 14;
 	state.current_score = 0;
 	state.needed_score = 0;
 	state.state = {
-		7,7,7,7,7,7,7,7,7,
-		7,1,2,2,1,1,2,1,7,
-		7,2,1,1,1,1,2,1,7,
-		7,1,1,1,1,2,2,2,7,
-		7,1,7,2,8,1,7,1,7,
-		7,1,2,2,1,2,1,1,7,
-		7,1,2,1,1,1,1,2,7,
-		7,1,1,1,1,2,1,1,7,
-		7,7,7,7,7,7,7,7,7
+		7,7,7,7,7,7,7,7,
+		7,1,2,2,2,2,1,7,
+		7,2,2,2,2,2,2,7,
+		7,2,2,2,2,2,2,7,
+		7,2,2,2,2,2,2,7,
+		7,1,1,1,1,1,1,7,
+		7,1,1,1,1,1,1,7,
+		7,1,1,1,1,1,1,7,
+		7,1,1,1,1,1,1,7,
+		7,1,1,1,1,1,1,7,
+		7,1,1,1,1,1,1,7,
+		7,1,7,7,2,7,1,7,
+		7,1,7,1,1,8,1,7,
+		7,7,7,7,7,7,7,7
 	};
 	int player_dx = 0;
 	int player_dy = 0;
@@ -736,7 +741,7 @@ int main() {
 	
 		glUniform1f(move_scale_id, tick / (GLfloat)TICKRATE);
 		glUniform2f(map_scale_id, 2 * 64.0 / screen_width, 2 * 64.0 / screen_height);
-		glUniform2f(player_pos_id, 5.0, 4.0);
+		glUniform2f(player_pos_id, 4.0, 7.0);
 
 		// glDrawArrays( https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glDrawArrays.xhtml )
 		// Parameters: type, first (vertex) to render, amount (of vertices) to render
