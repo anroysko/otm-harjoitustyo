@@ -11,25 +11,323 @@
 #include <GLFW/glfw3.h>	// glfw 3
 
 // GAME LOGIC
-// Struct that contains everything needed to draw the time step
+
+// Structs for giving data to draw
 // We make one of these every time step, so like three times a second
+struct Sprite {
+	int x;
+	int y;
+	int dx;
+	int dy;
+	int tex;
+};
+
 struct DrawData {
+	int width;	// Draw area width in blocks
+	int height;	// Draw area height in blocks
+	int cam_x;	// Camera x
+	int cam_y;	// Camera y
+	int cam_dx;	// Camera dx
+	int cam_dy;	// Camera dy
+	std::vector<Sprite> sprites;
+};
+
+
+// ATLAS INDICES
+const int EMPTY = 0;
+const int PLAYER = 8;
+const int SAND = 1;
+const int ROCK = 2;
+const int WALL = 7;
+
+const int FALLING_BIT = 16;
+
+struct Level {
 	int width;
 	int height;
-	int px;
-	int py;
-	int pdx;
-	int pdy;
-	std::vector<int> dx;
-	std::vector<int> dy;
-	std::vector<int> tex;
+	int current_score;
+	int needed_score;
+	std::vector<int> state; // Block type for this block
+
+	DrawData update(int player_dx, int player_dy) {
+		DrawData data;
+		data.width = width;
+		data.height = height;
+		data.cam_x = 0;
+		data.cam_y = 0;
+		data.cam_dx = 0;
+		data.cam_dy = 0;
+
+		// DO STUFF
+
+		std::vector<bool> moved (width * height, false);
+		std::vector<int> stack;
+
+		// Step 0. Preprocessing
+		for (int x = 0; x < width; ++x) {
+			for (int y = 0; y < height; ++y) {
+				int i = x + y * width;
+				int ty = y + 1;
+				int ti = x + ty * width;
+				if ((state[i] == ROCK) && (state[ti] == EMPTY)) {
+					state[i] |= FALLING_BIT;
+				}
+			}
+		}
+		// Set things that have nothing below them to be falling
+		// Step 1. Things moving to the side
+		for (int x = 0; x < width; ++x) {
+			for (int y = 0; y < height; ++y) {
+				int i = x + y * width;
+				if ( (!moved[i]) && (state[i] == PLAYER) && (player_dx != 0) ) {
+					stack.push_back(i);
+				}
+			}
+		}
+		while(! stack.empty()) {
+			int i = stack.back();
+			stack.pop_back();
+			int x = i % width;
+			int y = i / width;
+			// See if it can move
+			if ((state[i] == PLAYER) && (!moved[i])) {
+				int tx = x + player_dx;
+				int ti = tx + y * width;
+				if (state[ti] == EMPTY || state[ti] == SAND) {
+					state[ti] = PLAYER;
+					moved[ti] = true;
+					state[i] = EMPTY;
+					moved[i] = false;
+
+					Sprite player_sprite;
+					player_sprite.x = x;
+					player_sprite.y = y;
+					player_sprite.dx = player_dx;
+					player_sprite.dy = 0;
+					player_sprite.tex = PLAYER;
+					data.sprites.push_back(player_sprite);
+				}
+				
+			}
+		}
+		// Step 2. Moving up
+		for (int x = 0; x < width; ++x) {
+			for (int y = 0; y < height; ++y) {
+				int i = x + y * width;
+				if ( (!moved[i]) && (state[i] == PLAYER) && (player_dy == -1) ) {
+					stack.push_back(i);
+				}
+			}
+		}
+		while(! stack.empty()) {
+			int i = stack.back();
+			stack.pop_back();
+			int x = i % width;
+			int y = i / width;
+			// See if it can move
+			if ((state[i] == PLAYER) && (!moved[i])) {
+				int ty = y - 1;
+				int ti = x + ty * width;
+				if (state[ti] == EMPTY || state[ti] == SAND) {
+					state[ti] = PLAYER;
+					moved[ti] = true;
+					state[i] = EMPTY;
+					moved[i] = false;
+
+					Sprite player_sprite;
+					player_sprite.x = x;
+					player_sprite.y = y;
+					player_sprite.dx = 0;
+					player_sprite.dy = -1;
+					player_sprite.tex = PLAYER;
+					data.sprites.push_back(player_sprite);
+				}
+				
+			}
+		}
+		// Step 3. Falling down
+		for (int x = 0; x < width; ++x) {
+			for (int y = 0; y < height; ++y) {
+				int i = x + y * width;
+				if (((state[i] == PLAYER) && (player_dy == 1))) {
+					stack.push_back(i);
+				} else if (state[i] & FALLING_BIT) {
+					stack.push_back(i);
+				} else if ((state[i] == ROCK) && (state[i + width] == EMPTY)) {
+					state[i] |= FALLING_BIT;
+					stack.push_back(i);
+				}
+			}
+		}
+		while(! stack.empty()) {
+			int i = stack.back();
+			stack.pop_back();
+			int x = i % width;
+			int y = i / width;
+			// See if it can move
+			if (moved[i]) continue;
+			if (state[i] == PLAYER) {
+				int ty = y + 1;
+				int ti = x + ty * width;
+				if (state[ti] == EMPTY || state[ti] == SAND) {
+					state[ti] = PLAYER;
+					moved[ti] = true;
+					state[i] = EMPTY;
+					moved[i] = false;
+					
+					int above_i = (x + (y-1) * width);
+					if (!moved[above_i]) {
+						if ((state[above_i] == PLAYER) && (player_dy == 1)) {
+							stack.push_back(above_i);
+						} else if ((state[above_i] | FALLING_BIT) == (ROCK | FALLING_BIT)) {
+							state[above_i] |= FALLING_BIT;
+							stack.push_back(above_i);
+						}
+					}
+
+					Sprite player_sprite;
+					player_sprite.x = x;
+					player_sprite.y = y;
+					player_sprite.dx = 0;
+					player_sprite.dy = 1;
+					player_sprite.tex = PLAYER;
+					data.sprites.push_back(player_sprite);
+				}
+			} else if ((state[i] | FALLING_BIT) == (ROCK | FALLING_BIT)) {
+				int ty = y + 1;
+				int ti = x + ty * width;
+				if (state[ti] == EMPTY || state[ti] == PLAYER) {
+					state[ti] = ROCK | FALLING_BIT;
+					moved[ti] = true;
+					state[i] = EMPTY;
+					moved[i] = false;
+					
+					int above_i = (x + (y-1) * width);
+					if (!moved[above_i]) {
+						if ((state[above_i] == PLAYER) && (player_dy == 1)) {
+							stack.push_back(above_i);
+						} else if ((state[above_i] | FALLING_BIT) == (ROCK | FALLING_BIT)) {
+							state[above_i] |= FALLING_BIT;
+							stack.push_back(above_i);
+						}
+					}
+					
+					Sprite rock_sprite;
+					rock_sprite.x = x;
+					rock_sprite.y = y;
+					rock_sprite.dx = 0;
+					rock_sprite.dy = 1;
+					rock_sprite.tex = ROCK;
+					data.sprites.push_back(rock_sprite);
+				}
+			}
+		}
+		// Step 3.5. Set still falling things to stop falling
+		for (int x = 0; x < width; ++x) {
+			for (int y = 0; y < height; ++y) {
+				int i = x + y * width;
+				if ((!moved[i]) && (state[i] & FALLING_BIT)) {
+					moved[i] = true;
+					state[i] &= ~FALLING_BIT;
+					
+					Sprite block_sprite;
+					block_sprite.x = x;
+					block_sprite.y = y;
+					block_sprite.dx = 0;
+					block_sprite.dy = 0;
+					block_sprite.tex = state[i];
+					data.sprites.push_back(block_sprite);
+				}
+			}
+		}
+		// Step 4. Things rolling to the side
+		for (int x = 0; x < width; ++x) {
+			for (int y = 0; y < height; ++y) {
+				int i = x + y * width;
+				if (moved[i]) continue;
+				// S _
+				// R _
+				bool is_rollable = (state[i] == ROCK);
+				bool is_round = (state[i+width] == ROCK);
+				bool left_empty = (state[i-1] == EMPTY) && (state[i-1+width] == EMPTY);
+				bool right_empty = (state[i+1] == EMPTY) && (state[i+1+width] == EMPTY);
+				if (is_rollable && is_round && (left_empty || right_empty)) stack.push_back(i);
+			}
+		}
+		while(! stack.empty()) {
+			int i = stack.back();
+			stack.pop_back();
+			int x = i % width;
+			int y = i / width;
+			if (moved[i]) continue;
+			bool is_rollable = (state[i] == ROCK);
+			bool is_round = (state[i+width] == ROCK);
+			bool left_empty = (state[i-1] == EMPTY) && (state[i-1+width] == EMPTY);
+			bool right_empty = (state[i+1] == EMPTY) && (state[i+1+width] == EMPTY);
+			int rock_dx = 0;
+			if (is_rollable && is_round && left_empty) {
+				rock_dx = -1;
+			} else if (is_rollable && is_round && right_empty) {
+				rock_dx = 1;
+			}
+			if (rock_dx == 0) continue;
+
+			Sprite rock_sprite;
+			rock_sprite.x = x;
+			rock_sprite.y = y;
+			rock_sprite.dx = rock_dx;
+			rock_sprite.dy = 0;
+			rock_sprite.tex = state[i];
+			data.sprites.push_back(rock_sprite);
+			
+			int ti = i + rock_dx;
+			state[ti] = ROCK | FALLING_BIT;
+			moved[ti] = true;
+			state[i] = EMPTY;
+			moved[i] = false;
+
+			stack.push_back(i-1);
+			stack.push_back(i+1);
+			stack.push_back(i-width);
+			stack.push_back(i-width-1);
+			stack.push_back(i-width+1);
+		}
+		
+		// Step 5. Draw objects that didn't move
+		for (int x = 0; x < width; ++x) {
+			for (int y = 0; y < height; ++y) {
+				int i = x + y * width;
+				if (moved[i] == true) continue;
+				if (state[i] == EMPTY) continue;
+				Sprite block_sprite;
+				block_sprite.x = x;
+				block_sprite.y = y;
+				block_sprite.dx = 0;
+				block_sprite.dy = 0;
+				block_sprite.tex = state[i];
+				data.sprites.push_back(block_sprite);
+			}
+		}
+		
+		// END DO STUFF
+		return data;
+	}
 };
 
 // END GAME LOGIC
+std::vector<bool> getKeyState(GLFWwindow* window, std::vector<int> keys) {
+	std::vector<bool> res (keys.size());
+	for (int i = 0; i < keys.size(); ++i) {
+		res[i] = (glfwGetKey(window, keys[i]) == GLFW_PRESS);
+	}
+	return res;
+}
 
 // DRAW LOGIC
 // Inits opengl and stuff
 // returns null pointer if initialization fails
+int screen_width;
+int screen_height;
 GLFWwindow* initGraphics() {
 	// Initialize glfw
 	if (!glfwInit()) {
@@ -61,12 +359,12 @@ GLFWwindow* initGraphics() {
 		std::cout << "Failed to retrieve monitor video mode\n";
 		return 0;
 	}
-	int screen_width = mode->width;
-	int screen_height = mode->height;
+	screen_width = mode->width;
+	screen_height = mode->height;
 	// http://www.glfw.org/docs/latest/group__window.html#ga5c336fddf2cbb5b92f65f10fb6043344
 	// Parameters: width, height, title, monitor, share
-	// GLFWwindow* window = glfwCreateWindow(screen_width, screen_height, "temporary testing", 0, 0);
-	GLFWwindow* window = glfwCreateWindow(512, 512, "temporary testing", 0, 0);
+	GLFWwindow* window = glfwCreateWindow(screen_width, screen_height, "temporary testing", 0, 0);
+	// GLFWwindow* window = glfwCreateWindow(512, 512, "temporary testing", 0, 0);
 	if (window == 0) {
 		std::cout << "Failed to create window\n";
 		return 0;
@@ -257,9 +555,10 @@ const GLfloat WIDTH_MULT = 1.0 / ATLAS_WIDTH;
 const GLfloat HEIGHT_MULT = 1.0 / ATLAS_HEIGHT;
 
 void initDrawStep(GLuint vertex_buffer_id, GLuint uv_buffer_id, GLuint dxy_buffer_id, DrawData& data) {
-	std::vector<GLfloat> vertex_buffer_data (2 * 6 * data.width * data.height);
-	std::vector<GLfloat> uv_buffer_data (2 * 6 * data.width * data.height);
-	std::vector<GLfloat> dxy_buffer_data (2 * 6 * data.width * data.height);
+	int sprite_cou = data.sprites.size();
+	std::vector<GLfloat> vertex_buffer_data (2 * 6 * sprite_cou);
+	std::vector<GLfloat> uv_buffer_data (2 * 6 * sprite_cou);
+	std::vector<GLfloat> dxy_buffer_data (2 * 6 * sprite_cou);
 
 	std::vector<int> help = {
 		0,0,
@@ -269,27 +568,25 @@ void initDrawStep(GLuint vertex_buffer_id, GLuint uv_buffer_id, GLuint dxy_buffe
 		0,1,
 		1,0
 	};
-	for (int y = 0; y < data.height; ++y) {
-		for (int x = 0; x < data.width; ++x) {
-			std::vector<GLfloat> vertex_x = {(GLfloat)x, (GLfloat)x+1};
-			std::vector<GLfloat> vertex_y = {(GLfloat)((data.height-1) - y), (GLfloat)(data.height-y)};
+	for (int i = 0; i < sprite_cou; ++i) {
+		Sprite sp = data.sprites[i];
 
-			int i = x + data.width * y;
-			int th = (ATLAS_HEIGHT - 1) - (data.tex[i] / ATLAS_HEIGHT);
-			int tw = data.tex[i] % ATLAS_HEIGHT;
-			std::vector<GLfloat> uv_u = {tw*WIDTH_MULT, (tw+1)*WIDTH_MULT};
-			std::vector<GLfloat> uv_v = {th*HEIGHT_MULT, (th+1)*HEIGHT_MULT};
+		std::vector<GLfloat> vertex_x = {(GLfloat)sp.x, (GLfloat)sp.x + 1};
+		std::vector<GLfloat> vertex_y = {(GLfloat)((data.height-1) - sp.y), (GLfloat)((data.height-1)-(sp.y + 1))};
+		int th = (ATLAS_HEIGHT - 1) - (sp.tex / ATLAS_HEIGHT);
+		int tw = sp.tex % ATLAS_HEIGHT;
+		std::vector<GLfloat> uv_u = {tw*WIDTH_MULT, (tw+1)*WIDTH_MULT};
+		std::vector<GLfloat> uv_v = {(th+1)*HEIGHT_MULT, th*HEIGHT_MULT};
 
-			int base = 12 * i;
-			for (int j = 0; j < 6; ++j) {
-				vertex_buffer_data[	base + 2*j + 0] = vertex_x[help[2*j + 0]];
-				uv_buffer_data[		base + 2*j + 0] = uv_u[help[2*j + 0]];
-				dxy_buffer_data[	base + 2*j + 0] = data.dx[i];
-				
-				vertex_buffer_data[	base + 2*j + 1] = vertex_y[help[2*j + 1]];
-				uv_buffer_data[		base + 2*j + 1] = uv_v[help[2*j + 1]];
-				dxy_buffer_data[	base + 2*j + 1] = -data.dy[i];
-			}
+		int base = 12 * i;
+		for (int j = 0; j < 6; ++j) {
+			vertex_buffer_data[	base + 2*j + 0] = vertex_x[help[2*j + 0]];
+			uv_buffer_data[		base + 2*j + 0] = uv_u[help[2*j + 0]];
+			dxy_buffer_data[	base + 2*j + 0] = sp.dx;
+			
+			vertex_buffer_data[	base + 2*j + 1] = vertex_y[help[2*j + 1]];
+			uv_buffer_data[		base + 2*j + 1] = uv_v[help[2*j + 1]];
+			dxy_buffer_data[	base + 2*j + 1] = -sp.dy;
 		}
 	}
 
@@ -300,7 +597,6 @@ void initDrawStep(GLuint vertex_buffer_id, GLuint uv_buffer_id, GLuint dxy_buffe
 	glBindBuffer(GL_ARRAY_BUFFER, dxy_buffer_id);
 	glBufferData(GL_ARRAY_BUFFER, dxy_buffer_data.size() * sizeof(GLfloat), &dxy_buffer_data[0], GL_STATIC_DRAW);
 }
-
 // END DRAW LOGIC
 
 int main() {
@@ -336,29 +632,39 @@ int main() {
 	GLint player_pos_id = glGetUniformLocation(program_id, "player_pos");
 
 	// Drawing things for testing
+	Level state;
+	state.width = 9;
+	state.height = 9;
+	state.current_score = 0;
+	state.needed_score = 0;
+	state.state = {
+		7,7,7,7,7,7,7,7,7,
+		7,1,2,2,1,1,2,1,7,
+		7,2,1,1,1,1,2,1,7,
+		7,1,1,1,1,2,2,2,7,
+		7,1,7,2,8,1,7,1,7,
+		7,1,2,2,1,2,1,1,7,
+		7,1,2,1,1,1,1,2,7,
+		7,1,1,1,1,2,1,1,7,
+		7,7,7,7,7,7,7,7,7
+	};
+	int player_dx = 0;
+	int player_dy = 0;
+	DrawData data = state.update(player_dx, player_dy);
 	/*
-	struct DrawData {
-		int width;
-		int height;
-		int px;
-		int py;
-		int pdx;
-		int pdy;
-		std::vector<int> dx;
-		std::vector<int> dy;
-		std::vector<int> tex;
-	}
-	*/
 	DrawData data;
 	data.width = 3;
 	data.height = 3;
-	data.px = 1;
-	data.py = 1;
-	data.pdx = 0;
-	data.pdy = 0;
-	data.dx = {0, 0, 0,-1, 0, 0, 0, 0, 0};
-	data.dy = {0,-1, 1, 0, 0, 1, 0, 1, 1};
-	data.tex= {0, 1, 2, 5, 6, 3, 7, 8, 4};
+	data.cam_x = 1;
+	data.cam_y = 1;
+	data.cam_dx = 0;
+	data.cam_dy = 0;
+	Sprite sprite_a; sprite_a.x = 0; sprite_a.y = 0; sprite_a.dx = 0; sprite_a.dy = 0; sprite_a.tex = 0;
+	Sprite sprite_b; sprite_b.x = 1; sprite_b.y = 0; sprite_b.dx = 0; sprite_b.dy = 1; sprite_b.tex = 1;
+	Sprite sprite_c; sprite_c.x = 2; sprite_c.y = 0; sprite_c.dx = 0; sprite_c.dy = 0; sprite_c.tex = 2;
+	Sprite sprite_d; sprite_d.x = 3; sprite_d.y = 0; sprite_d.dx = 1; sprite_d.dy = 0; sprite_d.tex = 3;
+	data.sprites = {sprite_a, sprite_b, sprite_c, sprite_d};
+	*/
 
 	GLuint vertex_buffer_id;
 	glGenBuffers(1, &vertex_buffer_id);
@@ -387,9 +693,31 @@ int main() {
 	glBindTexture(GL_TEXTURE_2D, texture_id);
 	glUniform1i(texture_sampler_id, 0);
 
-	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 	int tick = 0;
+	const int TICKRATE = 16;
+
+	std::vector<int> keys = {GLFW_KEY_UP, GLFW_KEY_DOWN, GLFW_KEY_LEFT, GLFW_KEY_RIGHT};
+	std::vector<int> down_for (4, 0);
+	int curr_press = -1;
+	int next_press = -1;
+
 	while(true) {
+		std::vector<bool> is_down = getKeyState(window, keys);
+		for (int i = 0; i < 4; ++i) {
+			if (is_down[i] == true) {
+				if (down_for[i] == 0) {
+					if (curr_press == -1) {
+						curr_press = i;
+					} else {
+						next_press = i;
+					}
+				}
+				++down_for[i];
+			} else {
+				down_for[i] = 0;
+			}
+		}
+
 		glClear( GL_COLOR_BUFFER_BIT );
 		// glVertexAttribPointer ( https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glVertexAttribPointer.xhtml )
 		// Parameters: index (in vao), size (number of components), type (of each component),
@@ -406,20 +734,60 @@ int main() {
 		glEnableVertexAttribArray(2);
 		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*) 0);
 	
-		glUniform1f(move_scale_id, tick / 64.0);
-		glUniform2f(map_scale_id, 1 / 4.0, 1 / 4.0);
-		glUniform2f(player_pos_id, 1.0, 1.0);
+		glUniform1f(move_scale_id, tick / (GLfloat)TICKRATE);
+		glUniform2f(map_scale_id, 2 * 64.0 / screen_width, 2 * 64.0 / screen_height);
+		glUniform2f(player_pos_id, 5.0, 4.0);
 
 		// glDrawArrays( https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glDrawArrays.xhtml )
 		// Parameters: type, first (vertex) to render, amount (of vertices) to render
-		glDrawArrays(GL_TRIANGLES, 0, data.width * data.height * 6);
+		glDrawArrays(GL_TRIANGLES, 0, data.sprites.size() * 6);
 		
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);
 
 		glfwSwapBuffers(window);
-		tick += 4;
-		if (tick > 5 * 64) tick = 0;
+		glFinish();
+
+		++tick;
+		if (tick == TICKRATE) {
+			for (int i = 0; i < 4; ++i) {
+				if (down_for[i] >= TICKRATE) {
+					if (curr_press == -1) {
+						curr_press = i;
+					} else {
+						next_press = i;
+					}
+				}
+			}
+
+			player_dx = 0;
+			player_dy = 0;
+			if (curr_press == 0) player_dy = -1;
+			else if (curr_press == 1) player_dy = 1;
+			else if (curr_press == 2) player_dx = -1;
+			else if (curr_press == 3) player_dx = 1;
+			curr_press = next_press;
+			next_press = -1;
+
+			tick = 0;
+			data = state.update(player_dx, player_dy);
+			
+			initDrawStep(vertex_buffer_id, uv_buffer_id, dxy_buffer_id, data);
+			
+			/*
+			for (int y = 0; y < state.height; ++y) {
+				for (int x = 0; x < state.width; ++x) {
+					std::cout << state.state[x + y * state.width] << ' ';
+				}
+				std::cout << '\n';
+			}
+			*/
+			/*
+			for (auto it : data.sprites) {
+				std::cout << it.x << ' ' << it.y << ' ' << it.dx << ' ' << it.dy << '\n';
+			}
+			*/
+		}
 		glfwPollEvents();
 		if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) break;
 	}
