@@ -46,6 +46,8 @@ const int EMPTY = 0;
 const int PLAYER = 8;
 const int SAND = 1;
 const int ROCK = 2;
+const int EMERALD = 3;
+const int GOAL = 5;
 const int WALL = 7;
 
 const int FALLING_BIT = 16;
@@ -61,12 +63,12 @@ struct Level {
 	int pdy = 0;
 
 	bool can_move_up(int i, std::vector<bool>& moved) {
-		return (!moved[i]) && (state[i] == PLAYER) && (pdy == -1) && ((state[i-width] == EMPTY) || (state[i-width] == SAND));
+		return (!moved[i]) && (state[i] == PLAYER) && (pdy == -1) && ((state[i-width] == EMPTY) || (state[i-width] == SAND) || (state[i-width] == EMERALD) || (state[i-width] == GOAL && current_score >= needed_score));
 	}
 	bool can_move_left(int i, std::vector<bool>& moved) {
 		if (moved[i]) return false;
 		if (state[i] == PLAYER) {
-			return (pdx == -1) && (state[i-1] == EMPTY || state[i-1] == SAND);
+			return (pdx == -1) && (state[i-1] == EMPTY || state[i-1] == SAND || state[i-1] == EMERALD || (state[i-1] == GOAL && current_score >= needed_score));
 		}
 		if (state[i] == ROCK) {
 			return (pdx == -1) && (state[i-1] == EMPTY) && (state[i+1] == PLAYER);
@@ -76,7 +78,7 @@ struct Level {
 	bool can_move_right(int i, std::vector<bool>& moved) {
 		if (moved[i]) return false;
 		if (state[i] == PLAYER) {
-			return (pdx == 1) && (state[i+1] == EMPTY || state[i+1] == SAND);
+			return (pdx == 1) && (state[i+1] == EMPTY || state[i+1] == SAND || state[i+1] == EMERALD || (state[i+1] == GOAL && current_score >= needed_score));
 		}
 		if (state[i] == ROCK) {
 			return (pdx == 1) && (state[i+1] == EMPTY) && (state[i-1] == PLAYER);
@@ -84,16 +86,31 @@ struct Level {
 		return false;
 	}
 	bool can_move_down(int i, std::vector<bool>& moved) {
-		return (!moved[i]) && (state[i] == PLAYER) && (pdy == 1) && ((state[i+width] == EMPTY) || (state[i+width] == SAND));
+		return (!moved[i]) && (state[i] == PLAYER) && (pdy == 1) && ((state[i+width] == EMPTY) || (state[i+width] == SAND) || (state[i+width] == EMERALD) || (state[i+width] == GOAL && current_score >= needed_score));
 	}
 	bool can_fall(int i, std::vector<bool>& moved) {
-		return (!moved[i]) && ((state[i] | FALLING_BIT) == (ROCK | FALLING_BIT)) && (state[i+width] == EMPTY || ((state[i+width] == PLAYER) && (state[i] & FALLING_BIT)));
+		if (moved[i]) return false;
+		if ((state[i] | FALLING_BIT) == (ROCK | FALLING_BIT)) {
+			if (state[i + width] == EMPTY) return true;
+			if (state[i] & FALLING_BIT) {
+				if (state[i+width] == PLAYER) return true;
+				if (state[i+width] == EMERALD) return true;
+			}
+			return false;
+		} else if ((state[i] | FALLING_BIT) == (EMERALD | FALLING_BIT)) {
+			if (state[i + width] == EMPTY) return true;
+			if (state[i] & FALLING_BIT) {
+				if (state[i+width] == PLAYER) return true;
+			}
+			return false;
+		}
+		return false;
 	}
 	bool can_slide_left(int i, std::vector<bool>& moved) {
-		return (!moved[i]) && (state[i] == ROCK) && (state[i+width] == ROCK) && (state[i-1] == EMPTY) && (state[i-1+width] == EMPTY);
+		return (!moved[i]) && (state[i] == ROCK || state[i] == EMERALD) && (state[i+width] == ROCK || state[i+width] == EMERALD || state[i+width] == GOAL) && (state[i-1] == EMPTY) && (state[i-1+width] == EMPTY);
 	}
 	bool can_slide_right(int i, std::vector<bool>& moved) {
-		return (!moved[i]) && (state[i] == ROCK) && (state[i+width] == ROCK) && (state[i+1] == EMPTY) && (state[i+1+width] == EMPTY);
+		return (!moved[i]) && (state[i] == ROCK || state[i] == EMERALD) && (state[i+width] == ROCK || state[i+width] == EMERALD || state[i+width] == GOAL) && (state[i+1] == EMPTY) && (state[i+1+width] == EMPTY);
 	}
 
 	DrawData update(int player_dx, int player_dy) {
@@ -139,6 +156,9 @@ struct Level {
 			data.sprites.push_back(sprite);
 			// Update level
 			int ti = i + dx;
+			if (state[ti] == EMERALD && state[i] == PLAYER) {
+				++current_score;
+			}
 			moved[i] = false;
 			moved[ti] = true;
 			state[ti] = state[i];
@@ -163,6 +183,9 @@ struct Level {
 			data.sprites.push_back(sprite);
 			// Update level
 			int ti = i + dy * width;
+			if (state[ti] == EMERALD && state[i] == PLAYER) {
+				++current_score;
+			}
 			moved[i] = false;
 			moved[ti] = true;
 			state[ti] = state[i];
@@ -185,31 +208,29 @@ struct Level {
 				state[i] |= FALLING_BIT;
 			}
 			if (can_move_down(i, moved)) dy = 1;
-			if (dy == 0) continue;
+			if (dy == 0) {
+				if ((!moved[i]) && (state[i] & FALLING_BIT)) {
+					state[i] &= ~FALLING_BIT;
+					moved[i] = true;
+					Sprite sprite (x, y, 0, 0, state[i] & 15);
+					data.sprites.push_back(sprite);
+				}
+				continue;
+			}
 			// Create Sprite
 			Sprite sprite (x, y, 0, dy, state[i] & 15);
 			data.sprites.push_back(sprite);
 			// Update level
 			int ti = i + dy * width;
+			if (state[ti] == EMERALD && state[i] == PLAYER) {
+				++current_score;
+			}
 			moved[i] = false;
 			moved[ti] = true;
 			state[ti] = state[i];
 			state[i] = EMPTY;
 			// Update stack
 			stack.push_back(i-dy*width);
-		}
-		// Step 3.5. Set still falling things to stop falling
-		for (int x = 0; x < width; ++x) {
-			for (int y = 0; y < height; ++y) {
-				int i = x + y * width;
-				if ((!moved[i]) && (state[i] & FALLING_BIT)) {
-					moved[i] = true;
-					state[i] &= ~FALLING_BIT;
-					
-					Sprite sprite(x, y, 0, 0, state[i] & 15);
-					data.sprites.push_back(sprite);
-				}
-			}
 		}
 		// Step 4. Things rolling to the side
 		stack.resize(width * height);
@@ -230,6 +251,9 @@ struct Level {
 			// Update level
 			state[i] |= FALLING_BIT;
 			int ti = i + dx;
+			if (state[ti] == EMERALD && state[i] == PLAYER) {
+				++current_score;
+			}
 			moved[i] = false;
 			moved[ti] = true;
 			state[ti] = state[i];
@@ -245,8 +269,13 @@ struct Level {
 				int i = x + y * width;
 				if (moved[i] == true) continue;
 				if (state[i] == EMPTY) continue;
-				Sprite sprite(x, y, 0, 0, state[i] & 15);
-				data.sprites.push_back(sprite);
+				if (state[i] == GOAL && current_score >= needed_score) {
+					Sprite sprite(x, y, 0, 0, 6);
+					data.sprites.push_back(sprite);
+				} else {
+					Sprite sprite(x, y, 0, 0, state[i] & 15);
+					data.sprites.push_back(sprite);
+				}
 			}
 		}
 		
@@ -575,23 +604,19 @@ int main() {
 	// Drawing things for testing
 	Level state;
 	state.width = 8;
-	state.height = 14;
+	state.height = 10;
 	state.current_score = 0;
-	state.needed_score = 0;
+	state.needed_score = 10;
 	state.state = {
 		7,7,7,7,7,7,7,7,
-		7,1,2,2,2,2,1,7,
-		7,2,2,2,2,2,2,7,
-		7,2,2,2,2,2,2,7,
-		7,2,2,2,2,2,2,7,
+		7,1,1,1,1,1,5,7,
+		7,3,2,3,2,3,2,7,
+		7,2,3,2,3,2,3,7,
+		7,3,2,3,2,3,2,7,
+		7,2,3,2,3,2,3,7,
 		7,1,1,1,1,1,1,7,
 		7,1,1,1,1,1,1,7,
-		7,1,1,1,1,1,1,7,
-		7,1,1,1,1,1,1,7,
-		7,1,1,1,1,1,1,7,
-		7,1,1,1,1,1,1,7,
-		7,1,7,7,2,7,1,7,
-		7,1,7,1,1,8,1,7,
+		7,8,1,1,1,1,1,7,
 		7,7,7,7,7,7,7,7
 	};
 	int player_dx = 0;
@@ -682,7 +707,7 @@ int main() {
 	
 		glUniform1f(move_scale_id, tick / (GLfloat)TICKRATE);
 		glUniform2f(map_scale_id, 2 * 64.0 / screen_width, 2 * 64.0 / screen_height);
-		glUniform2f(player_pos_id, 4.0, 7.0);
+		glUniform2f(player_pos_id, 4.0, 5.0);
 
 		// glDrawArrays( https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glDrawArrays.xhtml )
 		// Parameters: type, first (vertex) to render, amount (of vertices) to render
@@ -716,7 +741,7 @@ int main() {
 			data = state.update(player_dx, player_dy);
 			
 			initDrawStep(vertex_buffer_id, uv_buffer_id, dxy_buffer_id, data);
-			
+			std::cout << state.current_score << '\n';
 			/*
 			std::cout << "TIck\n";
 			for (int y = 0; y < state.height; ++y) {
