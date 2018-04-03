@@ -43,12 +43,13 @@ struct DrawData {
 
 // ATLAS INDICES
 const int EMPTY = 0;
-const int PLAYER = 8;
 const int SAND = 1;
 const int ROCK = 2;
 const int EMERALD = 3;
 const int GOAL = 5;
+// Open goal: 6
 const int WALL = 7;
+const int PLAYER = 8;
 
 const int FALLING_BIT = 16;
 
@@ -127,6 +128,7 @@ struct Level {
 
 		// DO STUFF
 
+		std::vector<int> explosions; // Vector containing coordinates that will explode at "explode" step
 		std::vector<bool> moved (width * height, false);
 		std::vector<int> stack;
 
@@ -278,6 +280,7 @@ struct Level {
 				}
 			}
 		}
+
 		
 		// END DO STUFF
 		return data;
@@ -607,6 +610,20 @@ int main() {
 	state.height = 10;
 	state.current_score = 0;
 	state.needed_score = 10;
+	/*
+	state.state = {
+		7,7,7,7,7,7,7,7,
+                7,1,1,1,1,1,5,7,
+                7,3,9,3,9,3,9,7,
+                7,9,3,9,3,9,3,7,
+                7,3,9,3,9,3,9,7,
+                7,9,3,9,3,9,3,7,
+                7,1,1,1,1,1,1,7,
+                7,1,1,7,7,1,1,7,
+                7,8,1,1,1,1,1,7,
+                7,7,7,7,7,7,7,7
+	};
+	*/
 	state.state = {
 		7,7,7,7,7,7,7,7,
 		7,1,1,1,1,1,5,7,

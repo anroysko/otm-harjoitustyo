@@ -1,6 +1,26 @@
-code : code.o
-	g++ -o code code.o -lglfw -lGLEW -lGL -std=c++11 -O2
-code.o : code.cpp
-	g++ -c code.cpp -std=c++11 -O2
+link_flags =
+compile_flags = -O2 -std=c++11
+main = main
+tester = testing/tester
+sources = main.cpp testing/tester.cpp game/game.cpp graphics/graphics.cpp
+objects = $(sources:.cpp=.o)
+depends = $(sources:.cpp=.d)
+
+$(main) : $(filter-out $(tester).o, $(objects))
+	g++ $(compile_flags) $^ -o $@ $(link_flags)
+
+$(tester) : $(filter-out $(main).o, $(objects))
+	g++ $(compile_flags) $^ -o $@ $(link_flags)
+
+-include $(depends)
+
+%.o : %.cpp
+	g++ $(compile_flags) -c -MMD $< -o $@
+
+.PHONY : test
+test : $(tester)
+	@./$(tester)
+
+.PHONY : clean
 clean :
-	rm code code.o
+	@rm -f $(main) $(tester) $(depends) $(objects)
