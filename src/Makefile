@@ -1,8 +1,8 @@
-link_flags =
+link_flags = -lglfw -lGLEW -lGL
 compile_flags = -O2 -std=c++11
 main = main
 tester = testing/tester
-sources = main.cpp testing/tester.cpp game/game.cpp graphics/graphics.cpp
+sources = main.cpp testing/tester.cpp game/game.cpp graphics/graphics.cpp graphics/util.cpp graphics/shader.cpp graphics/keystate.cpp
 objects = $(sources:.cpp=.o)
 depends = $(sources:.cpp=.d)
 

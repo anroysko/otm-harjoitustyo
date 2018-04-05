@@ -6,4 +6,5 @@
 | 20.3. | 4    | Viikon 2 Laskarit, Vaatimusmäärittely |
 | 28.3. | 10   | Nopeasti tehty grafiikkatestaus |
 | 1.4. | 6    | Nopeasti tehty pelimekaniikka |
-| yht   | 24   | | 
+| 5.4. | 8   | Koodi kokonaan reformatoitu, useampaan tiedostoon ja selkeämmäksi |
+| yht   | 32   | | 
