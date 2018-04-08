@@ -258,7 +258,6 @@ void GraphicsState::setDraw(DrawData& data) {
 void GraphicsState::draw(double dt, double time_per_step, DrawData& data) {
 	key_state.updateKeyState(window);
 
-	glUseProgram(program_id);
 	glClearColor(0.0f, 0.0f, 0.4f, 0.0f);	
 	glClear( GL_COLOR_BUFFER_BIT );
 

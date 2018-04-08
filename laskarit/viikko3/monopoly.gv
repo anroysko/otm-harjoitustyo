@@ -1,0 +1,47 @@
+digraph G {
+	Game [shape=box];
+	Board [shape=box];
+	Piece [shape=box];
+	Player [shape=record, style=solid, label="{\N|money:int}"];
+	Tile [shape=record, style=solid, label="{\<Interface\>|\N|void action()}"];
+	PrisonTile [shape=box];
+	StartingTile [shape=box];
+	ChanceTile [shape=box];
+	CommunityChestTile [shape=box];
+	StationTile [shape=box];
+	CompanyTile [shape=box];
+	StreetTile [shape=record, style=solid, label="{\N|name:string \n houses:int \n hotel:bool}"];
+	Deck [shape=box];
+	Card [shape=record, style=solid, label="{\<Interface\>|\N||void action()}"];
+
+	Game -> Board;
+	Game -> Player [label="2..8"];
+	Game -> StartingTile;
+	Game -> PrisonTile;
+	Game -> Deck [label="2"];
+	
+	Board -> Tile [label="40"];
+	
+	Player -> Piece;
+	
+	Piece -> Tile [taillabel = "*"];
+	
+	Tile -> Tile [label = "nextTile"];
+	
+	PrisonTile -> Tile [arrowhead=empty];
+	StartingTile -> Tile [arrowhead=empty];
+	ChanceTile -> Tile [arrowhead=empty];
+	CommunityChestTile -> Tile [arrowhead=empty];
+	StationTile -> Tile [arrowhead=empty];
+	CompanyTile -> Tile [arrowhead=empty];
+	StreetTile -> Tile [arrowhead=empty];
+
+	StreetTile -> Player;
+	CompanyTile -> Player;
+	StationTile -> Player;
+
+	ChanceTile -> Deck [taillabel = "*"];
+	CommunityChestTile -> Deck [taillabel = "*"];
+	
+	Deck -> Card [label = "0..*"];
+}
