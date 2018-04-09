@@ -7,4 +7,5 @@
 | 28.3. | 10   | Nopeasti tehty grafiikkatestaus |
 | 1.4. | 6    | Nopeasti tehty pelimekaniikka |
 | 5.4. | 8   | Koodi kokonaan refaktoroitu, useampaan tiedostoon ja selkeämmäksi |
-| yht   | 26   | | 
+| 10.4. | 4 | Testit ja testikattavuus konffittu Makefileen |
+| yht   | 30   | | 
