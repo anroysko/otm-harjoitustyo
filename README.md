@@ -21,8 +21,8 @@ Testikattavuusraportti luodaan komennolla
 (TODO: automaattinen testikattavuusraportin generoiminen)
 ```
 Kattavuusraporttia voi tarkastella avaamalla selaimella tiedosto `(TODO: insert file)`
-### Koodin ajaminen
-Koodin voi ajaa komennolla
+### Ohjelman ajaminen
+Ohjelman voi ajaa komennolla
 ```
 make run
 ```
