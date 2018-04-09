@@ -1,0 +1,15 @@
+title SequenceDiagram
+
+main->*machine: new Machine()
+machine->*tank: new FuelTank()
+machine->tank: Fill(40)
+machine->*engine: new Engine(tank)
+main->machine: drive()
+machine->engine: start()
+engine->tank: consume(5)
+machine->engine: isRunning()
+engine->tank: contentsLeft()
+tank-->engine: 35
+engine-->machine: true
+machine->engine: useEnergy()
+engine->tank: consume(10)
