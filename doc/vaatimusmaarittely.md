@@ -1,7 +1,7 @@
 # Vaatimusmäärittely
 
 ## Sovelluksen tarkoitus
-Sovellus on suppeampi versio Amiga-pelistä Emerald Mine. Siinä kaivetaan kaksiulotteisessa ruutupohjaisessa luolassa timantteja, joita kerättyään tarpeeksi pitää keretä kentän uloskäynnille aikarajassa. Peli on reaaliaikainen.
+Sovellus on suppeampi versio Amiga-pelistä Emerald Mine. Se on reaaliaikainen pulmapeli jossa kaivetaan kaksiulotteisessa ruutupohjaisessa luolassa timantteja, joita kerättyään tarpeeksi pitää keretä kentän uloskäynnille aikarajassa.
 
 ![Image from Emerald mine](https://www.emuparadise.me/GameBase%20Amiga/Screenshots/E/Emerald_Mine_2.png)
 
