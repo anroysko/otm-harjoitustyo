@@ -54,7 +54,8 @@ coverage : $(cov_bin_path)$(tester)
 	@lcov -q -a $(cov_bin_path)initcovdata.info -a $(cov_bin_path)runcovdata.info -o $(cov_bin_path)rescovdata.info 2>/dev/null
 	@lcov -q -e $(cov_bin_path)rescovdata.info "`pwd`/*" -o $(cov_bin_path)rescovdata.info 2>/dev/null
 	@genhtml -q -o $(cov_bin_path)html/ $(cov_bin_path)rescovdata.info 2>/dev/null
-	@echo created index.html in bin/cov/html/index.html
+	@echo created coverage report index.html in bin/cov/html/index.html
+	xdg-open $(cov_bin_path)html/index.html
 
 .PHONY : clean
 clean :

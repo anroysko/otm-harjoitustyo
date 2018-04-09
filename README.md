@@ -18,16 +18,16 @@ make test
 ```
 Testikattavuusraportti luodaan komennolla
 ```
-(TODO: automaattinen testikattavuusraportin generoiminen)
+make coverage
 ```
-Kattavuusraporttia voi tarkastella avaamalla selaimella tiedosto `(TODO: insert file)`
+Kattavuusraporttia voi tarkastella avaamalla selaimella tiedosto `src/bin/cov/html/index.html`
 ### Ohjelman ajaminen
 Ohjelman voi ajaa komennolla
 ```
 make run
 ```
-### Kompilointitiedostojen poistaminen
-src-folderin voi puhdistaa (poistaa compiloidessa luodut .o, .d, ja binääritiedostot) komennolla
+### Koodihakemiston puhdistaminen
+src-folderin voi puhdistaa kompiloitaessa luotavista tiedostoista komennolla
 ```
 make clean
 ```
