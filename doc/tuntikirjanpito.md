@@ -2,9 +2,9 @@
 
 | päivä | aika | mitä tein  |
 | :----:|:-----| :-----|
-| 14.3. | 4    | Viikon 1 Laskarit, Github-projektin luonti |
-| 20.3. | 4    | Viikon 2 Laskarit, Vaatimusmäärittely |
+| 14.3. | 1    | Github-projektin luonti |
+| 20.3. | 1    | Vaatimusmäärittely |
 | 28.3. | 10   | Nopeasti tehty grafiikkatestaus |
 | 1.4. | 6    | Nopeasti tehty pelimekaniikka |
-| 5.4. | 8   | Koodi kokonaan reformatoitu, useampaan tiedostoon ja selkeämmäksi |
-| yht   | 32   | | 
+| 5.4. | 8   | Koodi kokonaan refaktoroitu, useampaan tiedostoon ja selkeämmäksi |
+| yht   | 26   | | 

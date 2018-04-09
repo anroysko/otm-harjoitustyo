@@ -1,1 +1,9 @@
+# ignore all files with no extension (notably binary files)
+*	# ignore all
+!*.*	# unignore all with extension
+!*/	# unignore all dirs
+
 /laskarit/viikko2/Unicafe/target
+*.o
+*.d
+*
