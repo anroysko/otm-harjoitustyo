@@ -24,8 +24,6 @@ int main() {
 	if (state == nullptr) {
 		std::cout << "Failed to create graphics state\n";
 		return 1;
-	} else {
-		std::cout << "Successfully created graphics state\n";
 	}
 
 	int ticks = 0;

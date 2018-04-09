@@ -97,8 +97,8 @@ bool GraphicsState::initOpengl() {
 }
 
 bool GraphicsState::initShaders() {
-	std::string vertex_shader_path = "vertex_shader.glsl";
-	std::string fragment_shader_path = "fragment_shader.glsl";
+	std::string vertex_shader_path = "assets/vertex_shader.glsl";
+	std::string fragment_shader_path = "assets/fragment_shader.glsl";
 	Optional<GLuint> tmp = makeProgram(vertex_shader_path, fragment_shader_path);
 	if (! tmp) return false;
 
@@ -131,7 +131,7 @@ bool GraphicsState::initBuffers() {
 }
 
 bool GraphicsState::initTextures() {
-	std::string atlas_path = "atlas.bmp";
+	std::string atlas_path = "assets/atlas.bmp";
 	Optional<BMP> tmp = loadBMP(atlas_path);
 	if (!tmp) return false;
 	BMP atlas_bmp = tmp.unwrap();	
@@ -174,6 +174,7 @@ bool GraphicsState::init() {
 		std::cout << "Failed to initialize textures\n";
 		return false;
 	}
+	/*
 	std::cout << "program_id " << program_id << '\n';
 	std::cout << "vertex_array_object_id " << vertex_array_object_id << '\n';
 	std::cout << "vertex_buffer_id " << vertex_buffer_id << '\n';
@@ -190,6 +191,7 @@ bool GraphicsState::init() {
 	std::cout << "screen_width " << screen_width << '\n';
 	std::cout << "screen_height " << screen_height << '\n';
 	std::cout << "atlas_id " << atlas_id << '\n';
+	*/
 	return true;
 }
 
@@ -258,7 +260,7 @@ void GraphicsState::setDraw(DrawData& data) {
 void GraphicsState::draw(double dt, double time_per_step, DrawData& data) {
 	key_state.updateKeyState(window);
 
-	glClearColor(0.0f, 0.0f, 0.4f, 0.0f);	
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);	
 	glClear( GL_COLOR_BUFFER_BIT );
 
 	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_id);
