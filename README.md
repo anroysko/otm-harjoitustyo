@@ -11,13 +11,21 @@ Teen harjoitustyön C++:lla.
 ## Komentorivitoiminnot
 ### Testaus
 Testit suoritetaan komennolla
-    make test
+```
+make test
+```
 Testikattavuusraportti luodaan komennolla
-    (TODO: automaattinen testikattavuusraportin generoiminen)
-Kattavuusraporttia voi tarkastella avaamalla selaimella tiedosto '(TODO: insert file)'
+```
+(TODO: automaattinen testikattavuusraportin generoiminen)
+```
+Kattavuusraporttia voi tarkastella avaamalla selaimella tiedosto `(TODO: insert file)`
 ### Koodin ajaminen
 Koodin voi ajaa komennolla
-    make run
+```
+make run
+```
 ### Kompilointitiedostojen poistaminen
 src-folderin voi puhdistaa (poistaa .o, .d, ja binääritiedostot) komennolla
-    make clean
+```
+make clean
+```
