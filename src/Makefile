@@ -21,6 +21,10 @@ $(tester) : $(filter-out $(main).o, $(objects))
 test : $(tester)
 	@./$(tester)
 
+.PHONY : run
+run : $(main)
+	@./$(main)
+
 .PHONY : clean
 clean :
 	@rm -f $(main) $(tester) $(depends) $(objects)
