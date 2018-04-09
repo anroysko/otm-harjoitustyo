@@ -25,7 +25,7 @@ Koodin voi ajaa komennolla
 make run
 ```
 ### Kompilointitiedostojen poistaminen
-src-folderin voi puhdistaa (poistaa .o, .d, ja binääritiedostot) komennolla
+src-folderin voi puhdistaa (poistaa compiloidessa luodut .o, .d, ja binääritiedostot) komennolla
 ```
 make clean
 ```
