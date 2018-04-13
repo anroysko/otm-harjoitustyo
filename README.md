@@ -20,6 +20,10 @@ Testikattavuusraportti luodaan komennolla
 ```
 make coverage
 ```
+Kattavuusraportin generoinnissa käytetään lcov:ia. Sen voi asentaa komennolla
+```
+sudo apt install lcov
+```
 Kattavuusraporttia voi tarkastella avaamalla selaimella tiedosto `src/bin/cov/html/index.html`
 ### Ohjelman ajaminen
 Ohjelman voi ajaa komennolla
