@@ -1,5 +1,5 @@
 # OTM-harjoitustyö
-Sovellus on suppeampi versio Amiga-pelistä Emerald Mine. Se on reaaliaikainen pulmapeli jossa kaivetaan kaksiulotteisessa ruutupohjaisessa luolassa timantteja, joita kerättyään tarpeeksi pitää keretä kentän uloskäynnille aikarajassa.
+Sovellus on suppea kopio Amiga-pelistä Emerald Mine. Se on reaaliaikainen pulmapeli jossa kaivetaan kaksiulotteisessa ruutupohjaisessa luolassa timantteja, joita kerättyään tarpeeksi pitää keretä kentän uloskäynnille aikarajassa.
 
 ![Screenshot from Emerald mine](https://github.com/anroysko/otm-harjoitustyo/blob/master/doc/game_screenshot.png)
 
@@ -10,7 +10,15 @@ Ohjelma on toteutettu C++:lla.
 
 [vaatimusmaarittely.md](https://github.com/anroysko/otm-harjoitustyo/blob/master/doc/vaatimusmaarittely.md)
 
+
 ## Komentorivitoiminnot
+
+Ohjelman kompilointiin tarvitaan (ainakin) kirjastoja
+```
+libglfw3 libglew2.0 libgl1-mesa-dev
+```
+Ne voi asentaa aptista
+
 ### Testaus
 Testit suoritetaan komennolla
 ```
