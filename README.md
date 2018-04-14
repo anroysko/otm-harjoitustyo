@@ -10,13 +10,14 @@ Ohjelma on toteutettu C++:lla.
 
 [vaatimusmaarittely.md](https://github.com/anroysko/otm-harjoitustyo/blob/master/doc/vaatimusmaarittely.md)
 
-
 ## Komentorivitoiminnot
 
-Ohjelman kompilointiin tarvitaan (ainakin) kirjastoja
+Ohjelman kompilointiin tarvitaan (ainakin) kirjastoja:
 ```
 libglfw3 libglew2.0 libgl1-mesa-dev
 ```
+Testikattavuusraportin generointiin tarvitsee ohjelman `lcov`
+
 Ne voi asentaa aptista
 
 ### Testaus
@@ -27,10 +28,6 @@ make test
 Testikattavuusraportti luodaan komennolla
 ```
 make coverage
-```
-Kattavuusraportin generoinnissa käytetään lcov:ia. Sen voi asentaa komennolla
-```
-sudo apt install lcov
 ```
 Kattavuusraporttia voi tarkastella avaamalla selaimella tiedosto `src/bin/cov/html/index.html`
 ### Ohjelman ajaminen
