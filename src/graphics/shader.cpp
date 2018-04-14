@@ -90,7 +90,7 @@ Optional<GLuint> linkProgram(GLuint vertex_shader_id, GLuint fragment_shader_id)
 // Compiles a shader program from the given vertex and fragment shaders
 // Returns id of the shader program. If compilation fails, returns -1
 Optional<GLuint> makeProgram(std::string& vertex_shader_path, std::string& fragment_shader_path) {
-	Optional<GLuint> tmp;
+	Optional<GLuint> tmp = Optional<GLuint>::none();
 	
 	tmp = compileShader(vertex_shader_path, GL_VERTEX_SHADER);
 	if (! tmp) return Optional<GLuint>::none();
