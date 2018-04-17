@@ -1,7 +1,7 @@
-#include <vector>
-#include <iostream>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <iostream>
+#include <vector>
 
 #include "keystate.h"
 
@@ -74,11 +74,3 @@ int KeyState::getMove() {
 	next_move = MOVE_NONE;
 	return res;
 }
-
-
-
-
-
-
-
-

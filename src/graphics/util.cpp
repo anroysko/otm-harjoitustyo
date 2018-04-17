@@ -1,21 +1,21 @@
-#include <iostream>	// std::cout
-#include <fstream>	// std::ifstream
-#include <sstream>	// std::stringstream
-#include <vector>	// std::vector
-#include <utility>	// std::move
+#include <fstream>   // std::ifstream
+#include <iostream>  // std::cout
+#include <sstream>   // std::stringstream
+#include <utility>   // std::move
+#include <vector>    // std::vector
 
 #include "util.h"
 
 Optional<BMP> loadBMP(std::string file_path) {
-	std::vector<unsigned char> header (54);
+	std::vector<unsigned char> header(54);
 	std::ifstream fin;
 	fin.open(file_path, std::ios::in | std::ios::binary);
-	if (! fin.is_open()) {
+	if (!fin.is_open()) {
 		std::cout << "Failed to open bmp file " << file_path << '\n';
 		return Optional<BMP>::none();
 	}
 	fin.read(reinterpret_cast<char*>(&header[0]), 54);
-	if (! fin.good()) {
+	if (!fin.good()) {
 		std::cout << "Failed to read bmp header from file " << file_path << '\n';
 		fin.close();
 		return Optional<BMP>::none();
@@ -27,20 +27,20 @@ Optional<BMP> loadBMP(std::string file_path) {
 		return Optional<BMP>::none();
 	}
 
-	unsigned int data_pos   = *(int*)&(header[0x0A]);
-	unsigned int width      = *(int*)&(header[0x12]);
-	unsigned int height     = *(int*)&(header[0x16]);
+	unsigned int data_pos = *(int*)&(header[0x0A]);
+	unsigned int width = *(int*)&(header[0x12]);
+	unsigned int height = *(int*)&(header[0x16]);
 	unsigned int image_size = *(int*)&(header[0x22]);
 	if (image_size == 0) image_size = width * height * 3;
 	if (data_pos == 0) data_pos = 54;
 
-	std::vector<unsigned char> data (image_size);
+	std::vector<unsigned char> data(image_size);
 	fin.seekg(data_pos);
 	fin.read(reinterpret_cast<char*>(&data[0]), image_size);
-	if (! fin.good()) {
+	if (!fin.good()) {
 		std::cout << "Failed to read bmp data from file " << file_path << '\n';
 		fin.close();
-		return Optional<BMP>::none();	
+		return Optional<BMP>::none();
 	}
 	fin.close();
 

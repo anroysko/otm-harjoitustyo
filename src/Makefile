@@ -13,6 +13,7 @@ objects := $(addprefix $(bin_path), $(sources:.cpp=.o))
 depends := $(addprefix $(bin_path), $(sources:.cpp=.d))
 cov_objects := $(addprefix $(cov_bin_path), $(sources:.cpp=.o))
 cov_depends := $(addprefix $(cov_bin_path), $(sources:.cpp=.d))
+stylecheck_files := $(sources) game/game.h graphics/graphics.h graphics/util.h graphics/shader.h graphics/keystate.h
 
 $(bin_path)$(main) : $(filter-out $(bin_path)$(tester).o, $(objects))
 	@mkdir -p $(dir $@)
@@ -55,6 +56,14 @@ coverage : $(cov_bin_path)$(tester)
 	@lcov -q -e $(cov_bin_path)rescovdata.info "`pwd`/*" -o $(cov_bin_path)rescovdata.info 2>/dev/null
 	@genhtml -q -o $(cov_bin_path)html/ $(cov_bin_path)rescovdata.info 2>/dev/null
 	@echo created coverage report index.html in bin/cov/html/index.html
+
+.PHONY : checkstyle
+checkstyle :
+	@echo "errors\t\tfile"
+	@for SOURCENAME in $(stylecheck_files); do\
+		clang-format-3.9 -output-replacements-xml $$SOURCENAME | grep -c -n "<replacement " | tr -d '\n';\
+		echo "\t:\t$$SOURCENAME";\
+	done
 
 .PHONY : clean
 clean :

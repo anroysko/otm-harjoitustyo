@@ -1,9 +1,9 @@
 #ifndef __GRAPHICS_KEYSTATE_H_
 #define __GRAPHICS_KEYSTATE_H_
 
-#include <vector>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <vector>
 
 // Different moves
 const int MOVE_NONE = 0;
@@ -17,16 +17,17 @@ const int MOVE_CONTROL_DOWN = 7;
 const int MOVE_CONTROL_UP = 8;
 
 class KeyState {
-	private:
-		bool control_down;
-		std::vector<int> state;
-		int curr_move;
-		int next_move;
-	public:
-		KeyState();
-		void updateKeyState(GLFWwindow* window);
-		int getMove();
-		bool esc_pressed;
+private:
+	bool control_down;
+	std::vector<int> state;
+	int curr_move;
+	int next_move;
+
+public:
+	KeyState();
+	void updateKeyState(GLFWwindow* window);
+	int getMove();
+	bool esc_pressed;
 };
 
-#endif // __GRAPHICS_KEYSTATE_H_
+#endif  // __GRAPHICS_KEYSTATE_H_

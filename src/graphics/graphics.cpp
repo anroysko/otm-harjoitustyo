@@ -1,18 +1,18 @@
 #include "graphics.h"
 
-#include <GL/glew.h>	// Opengl functions
-#include <GLFW/glfw3.h> // Helping with opengl
+#include <GL/glew.h>     // Opengl functions
+#include <GLFW/glfw3.h>  // Helping with opengl
 
-#include "util.h"	// Optional, loadBMP
-#include "shader.h"	// makeProgram
+#include "shader.h"  // makeProgram
+#include "util.h"    // Optional, loadBMP
 
-#include <iostream>	// std::cout
-#include <vector>	// std::vector
-#include <memory>	// std::unique_ptr
-#include <string>	// std::string
-#include <fstream>	// std::ifstream
-#include <sstream>	// std::stringstream
 #include <assert.h>
+#include <fstream>   // std::ifstream
+#include <iostream>  // std::cout
+#include <memory>    // std::unique_ptr
+#include <sstream>   // std::stringstream
+#include <string>    // std::string
+#include <vector>    // std::vector
 
 Sprite::Sprite(int x, int y, int dx, int dy, int tex) {
 	this->x = x;
@@ -76,21 +76,21 @@ bool GraphicsState::initOpengl() {
 	// You need to load opengl functions to use them. Doing it is laborous and platform dependent. Glew does this for you.
 	// ( https://www.khronos.org/opengl/wiki/Load_OpenGL_Functions )
 	// Opengl function pointers are loaded to the current opengl context, so we do this after initializing our opengl context.
-	glewExperimental = true; // Ensures that all extensions are considered ( http://glew.sourceforge.net/basic.html )
+	glewExperimental = true;  // Ensures that all extensions are considered ( http://glew.sourceforge.net/basic.html )
 	if (glewInit() != GLEW_OK) {
 		std::cout << "Failed to initialize GLEW\n";
 		return false;
 	}
-	
+
 	GLint tmp_error = glGetError();
-	while(tmp_error != GL_NO_ERROR) {
+	while (tmp_error != GL_NO_ERROR) {
 		std::cout << "GL error initializing opengl:  " << tmp_error << '\n';
 		tmp_error = glGetError();
 	}
 
 	// Enable debug output
 	glEnable(GL_DEBUG_OUTPUT);
-	glDebugMessageCallback((GLDEBUGPROC) errorCallback, 0);
+	glDebugMessageCallback((GLDEBUGPROC)errorCallback, 0);
 
 	// Successful initialization
 	return true;
@@ -100,12 +100,12 @@ bool GraphicsState::initShaders() {
 	std::string vertex_shader_path = "assets/vertex_shader.glsl";
 	std::string fragment_shader_path = "assets/fragment_shader.glsl";
 	Optional<GLuint> tmp = makeProgram(vertex_shader_path, fragment_shader_path);
-	if (! tmp) return false;
+	if (!tmp) return false;
 
 	program_id = tmp.unwrap();
 
 	glUseProgram(program_id);
-	
+
 	return true;
 }
 
@@ -134,7 +134,7 @@ bool GraphicsState::initTextures() {
 	std::string atlas_path = "assets/atlas.bmp";
 	Optional<BMP> tmp = loadBMP(atlas_path);
 	if (!tmp) return false;
-	BMP atlas_bmp = tmp.unwrap();	
+	BMP atlas_bmp = tmp.unwrap();
 
 	GLuint texture_id;
 	glGenTextures(1, &texture_id);
@@ -152,12 +152,12 @@ bool GraphicsState::initTextures() {
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, atlas_id);
 	glUniform1i(texture_sampler_id, 0);
-	
+
 	return true;
 }
 
 bool GraphicsState::init() {
-	// Order is important!	
+	// Order is important!
 	if (!initOpengl()) {
 		std::cout << "Failed to initialize opengl\n";
 		return false;
@@ -195,7 +195,6 @@ bool GraphicsState::init() {
 	return true;
 }
 
-
 GraphicsState::~GraphicsState() {
 	// TODO: actually safely quit
 	// Not really a high priority though :Dd
@@ -203,49 +202,48 @@ GraphicsState::~GraphicsState() {
 }
 
 std::unique_ptr<GraphicsState> GraphicsState::create() {
-	std::unique_ptr<GraphicsState> state (new GraphicsState);
-	if (! state->init()) state = nullptr;
+	std::unique_ptr<GraphicsState> state(new GraphicsState);
+	if (!state->init()) state = nullptr;
 	return state;
 }
 
 void GraphicsState::setDraw(DrawData& data) {
 	int sprite_cou = data.sprites.size();
-	std::vector<GLfloat> vertex_buffer_data (2 * 6 * sprite_cou);
-	std::vector<GLfloat> uv_buffer_data (2 * 6 * sprite_cou);
-	std::vector<GLfloat> dxy_buffer_data (2 * 6 * sprite_cou);
+	std::vector<GLfloat> vertex_buffer_data(2 * 6 * sprite_cou);
+	std::vector<GLfloat> uv_buffer_data(2 * 6 * sprite_cou);
+	std::vector<GLfloat> dxy_buffer_data(2 * 6 * sprite_cou);
 
 	// x- and y-coordinates of the endpoints of the two triangles making a square
 	std::vector<int> help = {
-		0,0,
-		0,1,
-		1,0,
-		1,1,
-		0,1,
-		1,0
-	};
+		0, 0,
+		0, 1,
+		1, 0,
+		1, 1,
+		0, 1,
+		1, 0};
 
 	for (int i = 0; i < sprite_cou; ++i) {
 		Sprite sp = data.sprites[i];
 
 		std::vector<GLfloat> vertex_x = {(GLfloat)sp.x, (GLfloat)sp.x + 1};
 		// Invert y-axis
-		std::vector<GLfloat> vertex_y = {(GLfloat)(data.height - sp.y), (GLfloat)(data.height-(sp.y + 1))};
+		std::vector<GLfloat> vertex_y = {(GLfloat)(data.height - sp.y), (GLfloat)(data.height - (sp.y + 1))};
 		int th = (ATLAS_GRID_HEIGHT - 1) - (sp.tex / ATLAS_GRID_HEIGHT);
 		int tw = sp.tex % ATLAS_GRID_HEIGHT;
-		std::vector<GLfloat> uv_u = {(GLfloat)tw / ATLAS_GRID_WIDTH, (GLfloat)(tw+1) / ATLAS_GRID_WIDTH};
+		std::vector<GLfloat> uv_u = {(GLfloat)tw / ATLAS_GRID_WIDTH, (GLfloat)(tw + 1) / ATLAS_GRID_WIDTH};
 		// Invert y-axis
-		std::vector<GLfloat> uv_v = {(GLfloat)(th+1) / ATLAS_GRID_HEIGHT, (GLfloat)th / ATLAS_GRID_HEIGHT};
+		std::vector<GLfloat> uv_v = {(GLfloat)(th + 1) / ATLAS_GRID_HEIGHT, (GLfloat)th / ATLAS_GRID_HEIGHT};
 
 		int base = 12 * i;
 		for (int j = 0; j < 6; ++j) {
 			// Fill vertex data
-			vertex_buffer_data[     base + 2*j + 0] = vertex_x[help[2*j + 0]];
-			uv_buffer_data[         base + 2*j + 0] = uv_u[help[2*j + 0]];
-			dxy_buffer_data[        base + 2*j + 0] = sp.dx;
+			vertex_buffer_data[base + 2 * j + 0] = vertex_x[help[2 * j + 0]];
+			uv_buffer_data[base + 2 * j + 0] = uv_u[help[2 * j + 0]];
+			dxy_buffer_data[base + 2 * j + 0] = sp.dx;
 
-			vertex_buffer_data[     base + 2*j + 1] = vertex_y[help[2*j + 1]];
-			uv_buffer_data[         base + 2*j + 1] = uv_v[help[2*j + 1]];
-			dxy_buffer_data[        base + 2*j + 1] = -sp.dy;
+			vertex_buffer_data[base + 2 * j + 1] = vertex_y[help[2 * j + 1]];
+			uv_buffer_data[base + 2 * j + 1] = uv_v[help[2 * j + 1]];
+			dxy_buffer_data[base + 2 * j + 1] = -sp.dy;
 		}
 	}
 	// Buffer data
@@ -260,25 +258,25 @@ void GraphicsState::setDraw(DrawData& data) {
 void GraphicsState::draw(double dt, double time_per_step, DrawData& data) {
 	key_state.updateKeyState(window);
 
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);	
-	glClear( GL_COLOR_BUFFER_BIT );
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	glClear(GL_COLOR_BUFFER_BIT);
 
 	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_id);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, (void*) 0);
-	
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
 	glBindBuffer(GL_ARRAY_BUFFER, uv_buffer_id);
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*) 0);
-	
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
 	glBindBuffer(GL_ARRAY_BUFFER, dxy_buffer_id);
 	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*) 0);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
 	// TODO: calculate player coordinates here
-	glUniform1f(move_scale_id, dt / time_per_step); // How much of a step has elapsed
-	glUniform2f(map_scale_id, 2.0 * 64.0 / screen_width, 2.0 * 64.0 / screen_height); // How wide and tall blocks should be
-	glUniform2f(player_pos_id, 4.0, 5.0);	// Player coordinates
+	glUniform1f(move_scale_id, dt / time_per_step);					   // How much of a step has elapsed
+	glUniform2f(map_scale_id, 2.0 * 64.0 / screen_width, 2.0 * 64.0 / screen_height);  // How wide and tall blocks should be
+	glUniform2f(player_pos_id, 4.0, 5.0);						   // Player coordinates
 
 	glDrawArrays(GL_TRIANGLES, 0, data.sprites.size() * 6);
 
