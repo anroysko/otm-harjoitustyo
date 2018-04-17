@@ -27,6 +27,7 @@ private:
 public:
 	Level(int width, int height, int current_score, int needed_score, std::vector<int> &state);
 	DrawData update(int move);
+	bool playerWon();
 };
 
 int add(int a, int b);

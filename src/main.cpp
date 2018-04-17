@@ -15,6 +15,7 @@ int main() {
 		7, 1, 1, 7, 7, 1, 1, 7,
 		7, 8, 1, 1, 1, 1, 1, 7,
 		7, 7, 7, 7, 7, 7, 7, 7};
+	std::vector<int> moves;
 	// width, height, current_score, needed_score
 	Level test_level(8, 10, 0, 10, test_level_data);
 	DrawData data = test_level.update(MOVE_NONE);
@@ -33,10 +34,15 @@ int main() {
 		++ticks;
 		if (ticks == ticks_per_move) {
 			int move = state->getMove();
+			moves.push_back(move);
 			data = test_level.update(move);
 			state->setDraw(data);
 			ticks = 0;
 		}
-		if (state->shouldQuit()) break;
+		if (state->shouldQuit() || test_level.playerWon()) break;
 	}
+	std::cout << "Replay vector:\n";
+	std::cout << "{";
+	for (int i = 0; i < (int)moves.size() - 1; ++i) std::cout << moves[i] << ", ";
+	std::cout << moves.back() << "}\n";
 }

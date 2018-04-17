@@ -14,6 +14,11 @@ depends := $(addprefix $(bin_path), $(sources:.cpp=.d))
 cov_objects := $(addprefix $(cov_bin_path), $(sources:.cpp=.o))
 cov_depends := $(addprefix $(cov_bin_path), $(sources:.cpp=.d))
 stylecheck_files := $(sources) game/game.h graphics/graphics.h graphics/util.h graphics/shader.h graphics/keystate.h
+clang_format_program := clang-format-3.9
+
+# 
+# Don't change anything after this
+#
 
 $(bin_path)$(main) : $(filter-out $(bin_path)$(tester).o, $(objects))
 	@mkdir -p $(dir $@)
@@ -61,7 +66,7 @@ coverage : $(cov_bin_path)$(tester)
 checkstyle :
 	@echo "errors\t\tfile"
 	@for SOURCENAME in $(stylecheck_files); do\
-		clang-format-3.9 -output-replacements-xml $$SOURCENAME | grep -c -n "<replacement " | tr -d '\n';\
+		$(clang_format_program) -output-replacements-xml $$SOURCENAME | grep -c -n "<replacement " | tr -d '\n';\
 		echo "\t:\t$$SOURCENAME";\
 	done
 

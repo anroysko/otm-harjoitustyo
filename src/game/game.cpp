@@ -248,9 +248,6 @@ DrawData Level::update(int move) {
 		// Update level
 		state[i] |= FALLING_BIT;
 		int ti = i + dx;
-		if (state[ti] == EMERALD && state[i] == PLAYER) {
-			++current_score;
-		}
 		moved[i] = false;
 		moved[ti] = true;
 		state[ti] = state[i];
@@ -278,6 +275,12 @@ DrawData Level::update(int move) {
 
 	// END DO STUFF
 	return data;
+}
+bool Level::playerWon() {
+	for (auto it : state) {
+		if (it == GOAL) return false;
+	}
+	return true;
 }
 
 // TMP thing for testing

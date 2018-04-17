@@ -18,6 +18,8 @@ libglfw3 libglew2.0 libgl1-mesa-dev
 ```
 Testikattavuusraportin generointiin tarvitsee ohjelman `lcov`
 
+Tyylin tarkistamiseen tarvitsee ohjelman `clang-format-3.9`. Eri versioita voi myös käyttää, mutta silloin Makefilessä pitää vaihtaa `$(clang_format_program)` haluttuun.
+
 Ne voi asentaa aptista
 
 ### Testaus
@@ -30,6 +32,10 @@ Testikattavuusraportti luodaan komennolla
 make coverage
 ```
 Kattavuusraporttia voi tarkastella avaamalla selaimella tiedosto `src/bin/cov/html/index.html`
+tyylin tarkastuksen voi tehdä komennolla
+```
+make checkstyle
+```
 ### Ohjelman ajaminen
 Ohjelman voi ajaa komennolla
 ```
