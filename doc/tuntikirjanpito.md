@@ -8,4 +8,6 @@
 | 1.4. | 6    | Nopeasti tehty pelimekaniikka |
 | 5.4. | 8   | Koodi kokonaan refaktoroitu, useampaan tiedostoon ja selkeämmäksi |
 | 10.4. | 4 | Testit ja testikattavuus konffittu Makefileen |
-| yht   | 30   | | 
+| 17.4. | 4 | checkstyle, uusi testi |
+| yht   | 34   | | 
+
