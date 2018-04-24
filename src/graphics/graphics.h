@@ -43,6 +43,7 @@ private:
 	GLuint overlay_vertex_buffer_id;  	// Buffer for vertex coordinates
 	GLuint overlay_uv_buffer_id;		// Buffer for vertex uv (image) coordinates
 	GLuint overlay_color_buffer_id;		// Buffer for vertex color values
+	GLuint overlay_map_scale_id;		// Uniform index for map scale
 	GLuint overlay_camera_dy_id;		// Uniform index for camera's dy
 	GLuint overlay_texture_sampler_id;	// Uniform index for texture sampler
 

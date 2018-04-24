@@ -21,6 +21,11 @@ int main() {
 	DrawData data = test_level.update(MOVE_NONE);
 	DrawData empty_data;
 
+	// int x, y, dx, dy, tex;
+	DrawData text_draw_data;
+	Sprite letter_a_sprite (0, 0, 0, 0, 0);
+	text_draw_data.sprites.push_back(letter_a_sprite);
+
 	std::unique_ptr<GraphicsState> state = GraphicsState::create();
 	if (state == nullptr) {
 		std::cout << "Failed to create graphics state\n";
@@ -30,9 +35,9 @@ int main() {
 	int ticks = 0;
 	int ticks_per_move = 16;
 	state->setLevelDraw(data);
-	state->setOverlayDraw(empty_data);
+	state->setOverlayDraw(text_draw_data);
 	while (true) {
-		state->draw(ticks, ticks_per_move, data, empty_data);
+		state->draw(ticks, ticks_per_move, data, text_draw_data);
 		++ticks;
 		if (ticks == ticks_per_move) {
 			int move = state->getMove();

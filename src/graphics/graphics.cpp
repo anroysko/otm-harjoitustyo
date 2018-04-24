@@ -163,7 +163,7 @@ bool GraphicsState::initBuffers() {
 	glGenBuffers(1, &overlay_color_buffer_id);
 	overlay_camera_dy_id = glGetUniformLocation(overlay_program_id, "camera_dy");
 	overlay_texture_sampler_id = glGetUniformLocation(overlay_program_id, "texture_sampler");
-
+	overlay_map_scale_id = glGetUniformLocation(overlay_program_id, "map_scale");
 	return true; // Nothing in this function can fail
 }
 
@@ -178,6 +178,9 @@ bool GraphicsState::initTextures() {
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, atlas_bmp.width, atlas_bmp.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &atlas_bmp.data[0]);
 	atlas_tile_width = atlas_bmp.width / ATLAS_GRID_WIDTH;
 	atlas_tile_height = atlas_bmp.height / ATLAS_GRID_HEIGHT;
+	// simple filtering
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
 	std::string font_path = "assets/font.bmp";
 	tmp = loadBMP(font_path);
@@ -189,18 +192,10 @@ bool GraphicsState::initTextures() {
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, font_bmp.width, font_bmp.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &font_bmp.data[0]);
 	font_symbol_width = font_bmp.width / FONT_GRID_WIDTH;
 	font_symbol_height = font_bmp.height / FONT_GRID_HEIGHT;
-
 	// simple filtering
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
-	// TODO:
-	/*
-	// Bind atlas texture
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, atlas_id);
-	glUniform1i(texture_sampler_id, 0);
-	*/
 	
 	return true;
 }
@@ -309,10 +304,54 @@ void GraphicsState::setLevelDraw(DrawData& data) {
 void GraphicsState::setOverlayDraw(DrawData& data) {
 	// Do nothing. Nothing to draw in overlay right now
 	// TODO:
+	int sprite_cou = data.sprites.size();
+	std::vector<GLfloat> vertex_buffer_data(2 * 6 * sprite_cou);
+	std::vector<GLfloat> uv_buffer_data(2 * 6 * sprite_cou);
+	std::vector<GLfloat> color_buffer_data(3 * 6 * sprite_cou);
+
+	// x- and y-coordinates of the endpoints of the two triangles making a square
+	std::vector<int> help = {
+		0, 0,
+		0, 1,
+		1, 0,
+		1, 1,
+		0, 1,
+		1, 0
+	};
+
+	for (int i = 0; i < sprite_cou; ++i) {
+		Sprite sp = data.sprites[i];
+
+		std::vector<GLfloat> vertex_x = {(GLfloat)sp.x, (GLfloat)sp.x + 1};
+		// Invert y-axis
+		std::vector<GLfloat> vertex_y = {(GLfloat)(data.height - sp.y), (GLfloat)(data.height - (sp.y + 1))};
+		int th = (FONT_GRID_HEIGHT - 1) - (sp.tex / FONT_GRID_HEIGHT);
+		int tw = sp.tex % FONT_GRID_HEIGHT;
+		std::vector<GLfloat> uv_u = {(GLfloat)tw / FONT_GRID_WIDTH, (GLfloat)(tw + 1) / FONT_GRID_WIDTH};
+		// Invert y-axis
+		std::vector<GLfloat> uv_v = {(GLfloat)(th + 1) / FONT_GRID_HEIGHT, (GLfloat)th / FONT_GRID_HEIGHT};
+
+		int base = 12 * i;
+		for (int j = 0; j < 6; ++j) {
+			// Fill vertex data
+			vertex_buffer_data[base + 2 * j + 0] = vertex_x[help[2 * j + 0]];
+			uv_buffer_data[base + 2 * j + 0] = uv_u[help[2 * j + 0]];
+
+			vertex_buffer_data[base + 2 * j + 1] = vertex_y[help[2 * j + 1]];
+			uv_buffer_data[base + 2 * j + 1] = uv_v[help[2 * j + 1]];
+		}
+		for (int j = 0; j < 18; ++j) color_buffer_data[18*i + j] = 0.5;
+	}
+	// Buffer data
+	glBindBuffer(GL_ARRAY_BUFFER, overlay_vertex_buffer_id);
+	glBufferData(GL_ARRAY_BUFFER, vertex_buffer_data.size() * sizeof(GLfloat), &vertex_buffer_data[0], GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, overlay_uv_buffer_id);
+	glBufferData(GL_ARRAY_BUFFER, uv_buffer_data.size() * sizeof(GLfloat), &uv_buffer_data[0], GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, overlay_color_buffer_id);
+	glBufferData(GL_ARRAY_BUFFER, color_buffer_data.size() * sizeof(GLfloat), &color_buffer_data[0], GL_STATIC_DRAW);
 }
 
 void GraphicsState::drawLevel(double dt, double time_per_step, DrawData& level_data) {
-
 	glUseProgram(level_program_id);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, atlas_id);
@@ -332,7 +371,7 @@ void GraphicsState::drawLevel(double dt, double time_per_step, DrawData& level_d
 
 	// TODO: calculate player coordinates here
 	glUniform1f(level_move_scale_id, dt / time_per_step);					   // How much of a step has elapsed
-	glUniform2f(level_map_scale_id, 2.0 * 64.0 / screen_width, 2.0 * 64.0 / screen_height);  // How wide and tall blocks should be (here, 64)
+	glUniform2f(level_map_scale_id, 2.0 * atlas_tile_width / screen_width, 2.0 * atlas_tile_height / screen_height);  // How wide and tall blocks should be (here, 64)
 	glUniform2f(level_player_pos_id, 4.0, 5.0);						   // Player coordinates
 
 	glDrawArrays(GL_TRIANGLES, 0, level_data.sprites.size() * 6);
@@ -340,11 +379,9 @@ void GraphicsState::drawLevel(double dt, double time_per_step, DrawData& level_d
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
 	glDisableVertexAttribArray(2);
-
 }
 
 void GraphicsState::drawOverlay(double dt, double time_per_step, DrawData& overlay_data) {
-
 	glUseProgram(overlay_program_id);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, font_id);
@@ -363,6 +400,7 @@ void GraphicsState::drawOverlay(double dt, double time_per_step, DrawData& overl
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
 	glUniform1f(overlay_camera_dy_id, 0.0);
+	glUniform2f(overlay_map_scale_id, 2.0 * font_symbol_width / screen_width, 2.0 * font_symbol_height / screen_height);
 
 	glDrawArrays(GL_TRIANGLES, 0, overlay_data.sprites.size() * 6);
 
@@ -376,7 +414,7 @@ void GraphicsState::draw(double dt, double time_per_step, DrawData& level_data, 
 	key_state.updateKeyState(window);
 	
 	// Clear previous
-	glClearColor(1.0, 1.0, 1.0, 0.0f);
+	glClearColor(0.1, 0.1, 0.1, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	// Draw level

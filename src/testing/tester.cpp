@@ -28,6 +28,7 @@ std::pair<int, int> testGame() {
 	// width, height, current_score, needed_score
 	Level test_level(8, 10, 0, 10, test_level_data);
 	DrawData data = test_level.update(MOVE_NONE);
+	DrawData empty_data;
 
 	std::unique_ptr<GraphicsState> state = GraphicsState::create();
 	if (state == nullptr) {
@@ -38,15 +39,16 @@ std::pair<int, int> testGame() {
 	int ticks = 0;
 	int ticks_per_move = 1;
 	int current_step = 0;
-	state->setDraw(data);
+	state->setLevelDraw(data);
+	state->setOverlayDraw(empty_data);
 	while (true) {
-		state->draw(ticks, ticks_per_move, data);
+		state->draw(ticks, ticks_per_move, data, empty_data);
 		++ticks;
 		if (ticks == ticks_per_move) {
 			int move = moves[current_step];
 			++current_step;
 			data = test_level.update(move);
-			state->setDraw(data);
+			state->setLevelDraw(data);
 			ticks = 0;
 		}
 		if (state->shouldQuit() || (current_step == moves.size())) break;

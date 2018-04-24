@@ -14,8 +14,7 @@ void main() {
 		254.0 / 255.0 < color.r
 	&&	1.0   / 255.0 > color.g
 	&&	199.0 / 255.0 < color.b
-	&&	201.0 / 255.0 > color.b
-	&&	254.0 / 255.0 < color.r) {
+	&&	201.0 / 255.0 > color.b) {
 		discard;
 	}
 	
