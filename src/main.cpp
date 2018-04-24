@@ -79,8 +79,10 @@ int main() {
 	std::cout << "Time used: " << test_level.current_time << "/" << test_level.time_limit << "\n";
 	std::cout << "Emeralds mined: " << test_level.current_score << "/" << test_level.needed_score << "\n";
 
-	std::cout << "Replay vector: ";
-	std::cout << "{";
-	for (int i = 0; i < (int)moves.size() - 1; ++i) std::cout << moves[i] << ", ";
-	std::cout << moves.back() << "}\n";
+	if (moves.size() > 0) {
+		std::cout << "Replay vector: ";
+		std::cout << "{";
+		for (int i = 0; i < (int)moves.size() - 1; ++i) std::cout << moves[i] << ", ";
+		std::cout << moves.back() << "}\n";
+	}
 }
