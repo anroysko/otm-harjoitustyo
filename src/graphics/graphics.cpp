@@ -1,18 +1,16 @@
-#include "graphics.h"
-
 #include <GL/glew.h>     // Opengl functions
 #include <GLFW/glfw3.h>  // Helping with opengl
-
-#include "shader.h"  // makeProgram
-#include "util.h"    // Optional, loadBMP
-
 #include <assert.h>
-#include <fstream>   // std::ifstream
-#include <iostream>  // std::cout
+#include <iostream>
 #include <memory>    // std::unique_ptr
-#include <sstream>   // std::stringstream
 #include <string>    // std::string
 #include <vector>    // std::vector
+#include <optional>
+
+#include "graphics.h"
+#include "shader.h"  // makeProgram
+#include "./../util/error.h"    // makeError
+#include "./../util/bmp.h"    // Optional, loadBMP
 
 Sprite::Sprite(int x, int y, int dx, int dy, int tex) {
 	this->x = x;
@@ -22,15 +20,36 @@ Sprite::Sprite(int x, int y, int dx, int dy, int tex) {
 	this->tex = tex;
 }
 
+
+// Opengl error callback function
+// Just outputs information about the error into the standard error stream
 void errorCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
-	std::string callback_type = (type == GL_DEBUG_TYPE_ERROR ? "** GL_ERROR **" : "");
-	std::cout << "GL CALLBACK: " << callback_type << " type = " << type << ", severity = " << severity << ", message = " << message << '\n';
+	if (type == GL_DEBUG_TYPE_ERROR) {
+		makeError();
+	} else if (severity == GL_DEBUG_SEVERITY_NOTIFICATION) {
+		makeNote();
+	} else {
+		makeWarning();
+	}
+
+	std::string error_type = "NO ENUM MATCH";
+	if (type == GL_DEBUG_TYPE_ERROR) error_type = "GL_DEBUG_TYPE_ERROR";
+	if (type == GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR) error_type = "GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR";
+	if (type == GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR) error_type = "GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR";
+	if (type == GL_DEBUG_TYPE_PORTABILITY) error_type = "GL_DEBUG_TYPE_PORTABILITY";
+	if (type == GL_DEBUG_TYPE_PERFORMANCE) error_type = "GL_DEBUG_TYPE_PERFORMANCE";
+	if (type == GL_DEBUG_TYPE_MARKER) error_type = "GL_DEBUG_TYPE_MARKER";
+	if (type == GL_DEBUG_TYPE_PUSH_GROUP) error_type = "GL_DEBUG_TYPE_PUSH_GROUP";
+	if (type == GL_DEBUG_TYPE_POP_GROUP) error_type = "GL_DEBUG_TYPE_POP_GROUP";
+	if (type == GL_DEBUG_TYPE_OTHER) error_type = "GL_DEBUG_TYPE_OTHER";
+
+	std::cerr << "**GL CALLBACK** " << " type: " << type << ", " << error_type << ", severity: " << severity << ", message: " << message << '\n';
 }
 
 bool GraphicsState::initOpengl() {
 	// Initialize glfw
 	if (!glfwInit()) {
-		std::cout << "Failed to initialize glfw\n";
+		makeError() << "Failed to initialize glfw\n";
 		return false;
 	}
 
@@ -50,12 +69,12 @@ bool GraphicsState::initOpengl() {
 	// Retrieve screen width and height
 	GLFWmonitor* monitor = glfwGetPrimaryMonitor();
 	if (monitor == nullptr) {
-		std::cout << "Failed to retrieve monitor\n";
+		makeError() << "Failed to retrieve monitor\n";
 		return false;
 	}
 	const GLFWvidmode* mode = glfwGetVideoMode(monitor);
 	if (mode == nullptr) {
-		std::cout << "Failed to retrieve monitor video mode\n";
+		makeError() << "Failed to retrieve monitor video mode\n";
 		return false;
 	}
 	screen_width = mode->width;
@@ -65,7 +84,7 @@ bool GraphicsState::initOpengl() {
 	window = glfwCreateWindow(screen_width, screen_height, "temporary testing", 0, 0);
 	// GLFWwindow* window = glfwCreateWindow(512, 512, "temporary testing", 0, 0);
 	if (window == nullptr) {
-		std::cout << "Failed to create window\n";
+		makeError() << "Failed to create window\n";
 		return false;
 	}
 	// Set current opengl context to our current window
@@ -78,13 +97,13 @@ bool GraphicsState::initOpengl() {
 	// Opengl function pointers are loaded to the current opengl context, so we do this after initializing our opengl context.
 	glewExperimental = true;  // Ensures that all extensions are considered ( http://glew.sourceforge.net/basic.html )
 	if (glewInit() != GLEW_OK) {
-		std::cout << "Failed to initialize GLEW\n";
+		makeError() << "Failed to initialize GLEW\n";
 		return false;
 	}
 
 	GLint tmp_error = glGetError();
 	while (tmp_error != GL_NO_ERROR) {
-		std::cout << "GL error initializing opengl:  " << tmp_error << '\n';
+		makeError() << "GL error initializing opengl:  " << tmp_error << '\n';
 		tmp_error = glGetError();
 	}
 
@@ -99,10 +118,10 @@ bool GraphicsState::initOpengl() {
 bool GraphicsState::initShaders() {
 	std::string vertex_shader_path = "assets/vertex_shader.glsl";
 	std::string fragment_shader_path = "assets/fragment_shader.glsl";
-	Optional<GLuint> tmp = makeProgram(vertex_shader_path, fragment_shader_path);
+	std::optional<GLuint> tmp = makeProgram(vertex_shader_path, fragment_shader_path);
 	if (!tmp) return false;
 
-	program_id = tmp.unwrap();
+	program_id = std::move(tmp.value());
 
 	glUseProgram(program_id);
 
@@ -132,9 +151,9 @@ bool GraphicsState::initBuffers() {
 
 bool GraphicsState::initTextures() {
 	std::string atlas_path = "assets/atlas.bmp";
-	Optional<BMP> tmp = loadBMP(atlas_path);
+	std::optional<BMP> tmp = loadBMP(atlas_path);
 	if (!tmp) return false;
-	BMP atlas_bmp = tmp.unwrap();
+	BMP atlas_bmp = std::move(tmp.value());
 
 	GLuint texture_id;
 	glGenTextures(1, &texture_id);
@@ -159,19 +178,19 @@ bool GraphicsState::initTextures() {
 bool GraphicsState::init() {
 	// Order is important!
 	if (!initOpengl()) {
-		std::cout << "Failed to initialize opengl\n";
+		makeError() << "Failed to initialize opengl\n";
 		return false;
 	}
 	if (!initShaders()) {
-		std::cout << "Failed to initialize shaders\n";
+		makeError() << "Failed to initialize shaders\n";
 		return false;
 	}
 	if (!initBuffers()) {
-		std::cout << "Failed to initialize buffers\n";
+		makeError() << "Failed to initialize buffers\n";
 		return false;
 	}
 	if (!initTextures()) {
-		std::cout << "Failed to initialize textures\n";
+		makeError() << "Failed to initialize textures\n";
 		return false;
 	}
 	/*
