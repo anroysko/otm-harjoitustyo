@@ -32,7 +32,7 @@ void errorCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsiz
 		makeWarning();
 	}
 
-	std::string error_type = "NO ENUM MATCH";
+	std::string error_type = "NO ERROR TYPE MATCH";
 	if (type == GL_DEBUG_TYPE_ERROR) error_type = "GL_DEBUG_TYPE_ERROR";
 	if (type == GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR) error_type = "GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR";
 	if (type == GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR) error_type = "GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR";
@@ -43,7 +43,13 @@ void errorCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsiz
 	if (type == GL_DEBUG_TYPE_POP_GROUP) error_type = "GL_DEBUG_TYPE_POP_GROUP";
 	if (type == GL_DEBUG_TYPE_OTHER) error_type = "GL_DEBUG_TYPE_OTHER";
 
-	std::cerr << "**GL CALLBACK** " << " type: " << type << ", " << error_type << ", severity: " << severity << ", message: " << message << '\n';
+	std::string severity_level = "NO SEVERITY MATCH";
+	if (severity == GL_DEBUG_SEVERITY_HIGH) severity_level = "GL_DEBUG_SEVERITY_HIGH";
+	if (severity == GL_DEBUG_SEVERITY_MEDIUM) severity_level = "GL_DEBUG_SEVERITY_MEDIUM";
+	if (severity == GL_DEBUG_SEVERITY_LOW) severity_level = "GL_DEBUG_SEVERITY_LOW";
+	if (severity == GL_DEBUG_SEVERITY_NOTIFICATION) severity_level = "GL_DEBUG_SEVERITY_NOTIFICATION";
+
+	std::cerr << "**GL CALLBACK** " << " type: " << error_type << "(" << type << "), severity: " <<  severity_level << "(" << severity << "), message: " << message << '\n';
 }
 
 bool GraphicsState::initOpengl() {
@@ -116,37 +122,49 @@ bool GraphicsState::initOpengl() {
 }
 
 bool GraphicsState::initShaders() {
-	std::string vertex_shader_path = "assets/vertex_shader.glsl";
-	std::string fragment_shader_path = "assets/fragment_shader.glsl";
-	std::optional<GLuint> tmp = makeProgram(vertex_shader_path, fragment_shader_path);
+	std::string level_vertex_shader_path = "assets/level_vertex_shader.glsl";
+	std::string level_fragment_shader_path = "assets/level_fragment_shader.glsl";
+	std::optional<GLuint> tmp = makeProgram(level_vertex_shader_path, level_fragment_shader_path);
 	if (!tmp) return false;
+	level_program_id = std::move(tmp.value());
 
-	program_id = std::move(tmp.value());
-
-	glUseProgram(program_id);
+	std::string overlay_vertex_shader_path = "assets/overlay_vertex_shader.glsl";
+	std::string overlay_fragment_shader_path = "assets/overlay_fragment_shader.glsl";
+	tmp = makeProgram(overlay_vertex_shader_path, overlay_fragment_shader_path);
+	if (!tmp) return false;
+	overlay_program_id = std::move(tmp.value());
 
 	return true;
 }
 
 bool GraphicsState::initBuffers() {
-	// Create a vertex array object
-	// Vertex array object ( https://www.khronos.org/opengl/wiki/Vertex_Specification#Vertex_Array_Object )
-	// A vertex array object stores the format of the vertex data, and the buffer objects with the vertex data arrays
 	glGenVertexArrays(1, &vertex_array_object_id);
 	glBindVertexArray(vertex_array_object_id);
 
+	// Level values
+	glUseProgram(level_program_id);
+	// Create a vertex array object
+	// Vertex array object ( https://www.khronos.org/opengl/wiki/Vertex_Specification#Vertex_Array_Object )
+	// A vertex array object stores the format of the vertex data, and the buffer objects with the vertex data arrays
 	// Create buffer objects
-	glGenBuffers(1, &vertex_buffer_id);
-	glGenBuffers(1, &uv_buffer_id);
-	glGenBuffers(1, &dxy_buffer_id);
-
+	glGenBuffers(1, &level_vertex_buffer_id);
+	glGenBuffers(1, &level_uv_buffer_id);
+	glGenBuffers(1, &level_dxy_buffer_id);
 	// Get uniforms's indexes
-	map_scale_id = glGetUniformLocation(program_id, "map_scale");
-	move_scale_id = glGetUniformLocation(program_id, "move_scale");
-	player_pos_id = glGetUniformLocation(program_id, "player_pos");
-	texture_sampler_id = glGetUniformLocation(program_id, "texture_sampler");
+	level_map_scale_id = glGetUniformLocation(level_program_id, "map_scale");
+	level_move_scale_id = glGetUniformLocation(level_program_id, "move_scale");
+	level_player_pos_id = glGetUniformLocation(level_program_id, "player_pos");
+	level_texture_sampler_id = glGetUniformLocation(level_program_id, "texture_sampler");
 
-	return true;
+	// Overlay values
+	glUseProgram(overlay_program_id);
+	glGenBuffers(1, &overlay_vertex_buffer_id);
+	glGenBuffers(1, &overlay_uv_buffer_id);
+	glGenBuffers(1, &overlay_color_buffer_id);
+	overlay_camera_dy_id = glGetUniformLocation(overlay_program_id, "camera_dy");
+	overlay_texture_sampler_id = glGetUniformLocation(overlay_program_id, "texture_sampler");
+
+	return true; // Nothing in this function can fail
 }
 
 bool GraphicsState::initTextures() {
@@ -155,23 +173,35 @@ bool GraphicsState::initTextures() {
 	if (!tmp) return false;
 	BMP atlas_bmp = std::move(tmp.value());
 
-	GLuint texture_id;
-	glGenTextures(1, &texture_id);
-	glBindTexture(GL_TEXTURE_2D, texture_id);
+	glGenTextures(1, &atlas_id);
+	glBindTexture(GL_TEXTURE_2D, atlas_id);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, atlas_bmp.width, atlas_bmp.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &atlas_bmp.data[0]);
-	atlas_id = texture_id;
 	atlas_tile_width = atlas_bmp.width / ATLAS_GRID_WIDTH;
 	atlas_tile_height = atlas_bmp.height / ATLAS_GRID_HEIGHT;
+
+	std::string font_path = "assets/font.bmp";
+	tmp = loadBMP(font_path);
+	if (!tmp) return false;
+	BMP font_bmp = std::move(tmp.value());
+
+	glGenTextures(1, &font_id);
+	glBindTexture(GL_TEXTURE_2D, font_id);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, font_bmp.width, font_bmp.height, 0, GL_BGR, GL_UNSIGNED_BYTE, &font_bmp.data[0]);
+	font_symbol_width = font_bmp.width / FONT_GRID_WIDTH;
+	font_symbol_height = font_bmp.height / FONT_GRID_HEIGHT;
 
 	// simple filtering
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
+	// TODO:
+	/*
 	// Bind atlas texture
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, atlas_id);
 	glUniform1i(texture_sampler_id, 0);
-
+	*/
+	
 	return true;
 }
 
@@ -193,6 +223,7 @@ bool GraphicsState::init() {
 		makeError() << "Failed to initialize textures\n";
 		return false;
 	}
+	
 	/*
 	std::cout << "program_id " << program_id << '\n';
 	std::cout << "vertex_array_object_id " << vertex_array_object_id << '\n';
@@ -226,7 +257,7 @@ std::unique_ptr<GraphicsState> GraphicsState::create() {
 	return state;
 }
 
-void GraphicsState::setDraw(DrawData& data) {
+void GraphicsState::setLevelDraw(DrawData& data) {
 	int sprite_cou = data.sprites.size();
 	std::vector<GLfloat> vertex_buffer_data(2 * 6 * sprite_cou);
 	std::vector<GLfloat> uv_buffer_data(2 * 6 * sprite_cou);
@@ -239,7 +270,8 @@ void GraphicsState::setDraw(DrawData& data) {
 		1, 0,
 		1, 1,
 		0, 1,
-		1, 0};
+		1, 0
+	};
 
 	for (int i = 0; i < sprite_cou; ++i) {
 		Sprite sp = data.sprites[i];
@@ -266,43 +298,96 @@ void GraphicsState::setDraw(DrawData& data) {
 		}
 	}
 	// Buffer data
-	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_id);
+	glBindBuffer(GL_ARRAY_BUFFER, level_vertex_buffer_id);
 	glBufferData(GL_ARRAY_BUFFER, vertex_buffer_data.size() * sizeof(GLfloat), &vertex_buffer_data[0], GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, uv_buffer_id);
+	glBindBuffer(GL_ARRAY_BUFFER, level_uv_buffer_id);
 	glBufferData(GL_ARRAY_BUFFER, uv_buffer_data.size() * sizeof(GLfloat), &uv_buffer_data[0], GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, dxy_buffer_id);
+	glBindBuffer(GL_ARRAY_BUFFER, level_dxy_buffer_id);
 	glBufferData(GL_ARRAY_BUFFER, dxy_buffer_data.size() * sizeof(GLfloat), &dxy_buffer_data[0], GL_STATIC_DRAW);
 }
 
-void GraphicsState::draw(double dt, double time_per_step, DrawData& data) {
-	key_state.updateKeyState(window);
+void GraphicsState::setOverlayDraw(DrawData& data) {
+	// Do nothing. Nothing to draw in overlay right now
+	// TODO:
+}
 
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
+void GraphicsState::drawLevel(double dt, double time_per_step, DrawData& level_data) {
 
-	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_id);
+	glUseProgram(level_program_id);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, atlas_id);
+	glUniform1i(level_texture_sampler_id, 0);
+	
+	glBindBuffer(GL_ARRAY_BUFFER, level_vertex_buffer_id);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
-	glBindBuffer(GL_ARRAY_BUFFER, uv_buffer_id);
+	glBindBuffer(GL_ARRAY_BUFFER, level_uv_buffer_id);
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
-	glBindBuffer(GL_ARRAY_BUFFER, dxy_buffer_id);
+	glBindBuffer(GL_ARRAY_BUFFER, level_dxy_buffer_id);
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
 	// TODO: calculate player coordinates here
-	glUniform1f(move_scale_id, dt / time_per_step);					   // How much of a step has elapsed
-	glUniform2f(map_scale_id, 2.0 * 64.0 / screen_width, 2.0 * 64.0 / screen_height);  // How wide and tall blocks should be
-	glUniform2f(player_pos_id, 4.0, 5.0);						   // Player coordinates
+	glUniform1f(level_move_scale_id, dt / time_per_step);					   // How much of a step has elapsed
+	glUniform2f(level_map_scale_id, 2.0 * 64.0 / screen_width, 2.0 * 64.0 / screen_height);  // How wide and tall blocks should be (here, 64)
+	glUniform2f(level_player_pos_id, 4.0, 5.0);						   // Player coordinates
 
-	glDrawArrays(GL_TRIANGLES, 0, data.sprites.size() * 6);
+	glDrawArrays(GL_TRIANGLES, 0, level_data.sprites.size() * 6);
 
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
 	glDisableVertexAttribArray(2);
 
+}
+
+void GraphicsState::drawOverlay(double dt, double time_per_step, DrawData& overlay_data) {
+
+	glUseProgram(overlay_program_id);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, font_id);
+	glUniform1i(overlay_texture_sampler_id, 0);
+	
+	glBindBuffer(GL_ARRAY_BUFFER, overlay_vertex_buffer_id);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, overlay_uv_buffer_id);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, overlay_color_buffer_id);
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+	glUniform1f(overlay_camera_dy_id, 0.0);
+
+	glDrawArrays(GL_TRIANGLES, 0, overlay_data.sprites.size() * 6);
+
+	glDisableVertexAttribArray(0);
+	glDisableVertexAttribArray(1);
+	glDisableVertexAttribArray(2);
+}
+
+void GraphicsState::draw(double dt, double time_per_step, DrawData& level_data, DrawData& overlay_data) {
+	// Update inputs
+	key_state.updateKeyState(window);
+	
+	// Clear previous
+	glClearColor(1.0, 1.0, 1.0, 0.0f);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	// Draw level
+	drawLevel(dt, time_per_step, level_data);
+	// End draw level
+
+	// Draw overlay
+	drawOverlay(dt, time_per_step, overlay_data);
+	// End draw overlay
+
+	// Swap buffers to finalize drawing
 	glfwSwapBuffers(window);
 }
 

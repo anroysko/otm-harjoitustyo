@@ -1,3 +1,6 @@
+// Vertex shader
+// level_vertex_shader.glsl
+
 #version 330 core
 layout(location = 0) in vec2 vertex_position;
 layout(location = 1) in vec2 vertex_uv;

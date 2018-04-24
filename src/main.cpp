@@ -19,6 +19,7 @@ int main() {
 	// width, height, current_score, needed_score
 	Level test_level(8, 10, 0, 10, test_level_data);
 	DrawData data = test_level.update(MOVE_NONE);
+	DrawData empty_data;
 
 	std::unique_ptr<GraphicsState> state = GraphicsState::create();
 	if (state == nullptr) {
@@ -28,20 +29,21 @@ int main() {
 
 	int ticks = 0;
 	int ticks_per_move = 16;
-	state->setDraw(data);
+	state->setLevelDraw(data);
+	state->setOverlayDraw(empty_data);
 	while (true) {
-		state->draw(ticks, ticks_per_move, data);
+		state->draw(ticks, ticks_per_move, data, empty_data);
 		++ticks;
 		if (ticks == ticks_per_move) {
 			int move = state->getMove();
 			moves.push_back(move);
 			data = test_level.update(move);
-			state->setDraw(data);
+			state->setLevelDraw(data);
 			ticks = 0;
 		}
 		if (state->shouldQuit() || test_level.playerWon()) break;
 	}
-	std::cout << "Replay vector:\n";
+	std::cout << "Replay vector: ";
 	std::cout << "{";
 	for (int i = 0; i < (int)moves.size() - 1; ++i) std::cout << moves[i] << ", ";
 	std::cout << moves.back() << "}\n";
