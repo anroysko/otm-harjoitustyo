@@ -22,4 +22,18 @@ std::optional<std::string> readFile(std::string file_path) {
 	return std::optional<std::string>{std::move(res)};
 }
 
-
+// Prompts the user to select a file, and returns that file's path. Only works on specific versions of ubuntu linux
+std::string promptFile() {
+	FILE* file = popen("zenity --file-selection", "r");
+	char buffer [1024];
+	std::stringstream ss;
+	while(true) {
+		char* res = fgets(buffer, 1024, file);
+		if (res == nullptr) break;
+		ss << buffer;
+	}
+	pclose(file);
+	std::string res;
+	ss >> res;
+	return res;
+}

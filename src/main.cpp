@@ -2,8 +2,20 @@
 #include "./game/game.h"
 #include "./graphics/graphics.h"
 #include "./graphics/keystate.h"
+#include "./util/file_io.h"
+#include <optional>
+#include <utility>
 
 int main() {
+	std::string level_path = promptFile();	
+	std::optional<Level> tmp = Level::parse(level_path);
+	if (! tmp) {
+		std::cout << "Failed to parse level\n";
+		return 1;
+	}
+	Level test_level = std::move(tmp.value());
+	
+	/*
 	std::vector<int> test_level_data = {
 		7, 7, 7, 7, 7, 7, 7, 7,
 		7, 1, 1, 1, 1, 1, 5, 7,
@@ -15,11 +27,12 @@ int main() {
 		7, 1, 1, 7, 7, 1, 1, 7,
 		7, 8, 1, 1, 1, 1, 1, 7,
 		7, 7, 7, 7, 7, 7, 7, 7};
-	std::vector<int> moves;
 	// width, height, current_score, needed_score
 	Level test_level(8, 10, 0, 10, test_level_data);
+	*/	
+
+	std::vector<int> moves;
 	DrawData data = test_level.update(MOVE_NONE);
-	DrawData empty_data;
 
 	// int x, y, dx, dy, tex;
 	DrawData text_draw_data;

@@ -1,4 +1,8 @@
 #include <vector>		     // std::vector
+#include <optional>		// std::optional
+#include <utility>		// std::move
+#include <fstream>		// std::ifstream
+#include "./../util/error.h"	// makeError()
 #include "./../graphics/graphics.h"  // DrawData
 #include "./../graphics/keystate.h"  // Move constants
 
@@ -93,11 +97,54 @@ bool Level::canSlideRight(int i, std::vector<bool> &moved) {
 }
 
 Level::Level(int width, int height, int current_score, int needed_score, std::vector<int> &state) {
+	this->name = "default name";
 	this->width = width;
 	this->height = height;
 	this->current_score = current_score;
 	this->needed_score = needed_score;
+	this->time_limit = 0;
+	this->current_time = 0;
 	this->state = state;
+}
+
+// Parses a level from the file_path
+// TODO: error if level format is incorrect
+std::optional<Level> Level::parse(std::string file_path) {
+	// Example level:
+	/*
+		lots of rocks		// Level name
+		8 10			// Width, height
+		7  7  7  7  7  7  7  7 	// Blocks
+		7  1  1  1  1  1  5  7 
+		7  3  2  3  2  3  2  7 
+		7  2  3  2  3  2  3  7 
+		7  3  2  3  2  3  2  7 
+		7  2  3  2  3  2  3  7 
+		7  1  1  1  1  1  1  7 
+		7  1  1  7  7  1  1  7 
+		7  8  1  1  1  1  1  7 
+		7  7  7  7  7  7  7  7
+		10 50			// Emeralds needed, Time Limit
+	*/
+	std::ifstream fin;
+	fin.open(file_path);
+	if (!fin.is_open()) {
+		makeError() << "failed to open " << file_path << ", failed to parse level\n";
+		return std::nullopt;
+	}
+
+	Level res;
+	std::getline(fin, res.name);
+	fin >> res.width >> res.height;
+	res.state.resize(res.width * res.height);
+	for (int y = 0; y < res.height; ++y) {
+		for (int x = 0; x < res.width; ++x) {
+			fin >> res.state[x + y * res.width];
+		}
+	}
+	fin >> res.needed_score;
+	fin >> res.time_limit;
+	return std::optional<Level>{std::move(res)};
 }
 
 DrawData Level::update(int move) {
