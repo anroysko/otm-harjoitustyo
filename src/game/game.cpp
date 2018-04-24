@@ -2,6 +2,7 @@
 #include <optional>		// std::optional
 #include <utility>		// std::move
 #include <fstream>		// std::ifstream
+#include <sstream>		// std::stringstream
 #include "./../util/error.h"	// makeError()
 #include "./../graphics/graphics.h"  // DrawData
 #include "./../graphics/keystate.h"  // Move constants
@@ -151,6 +152,12 @@ std::optional<Level> Level::parse(std::string file_path) {
 	res.current_time = 0;
 	res.current_score = 0;
 	return std::optional<Level>{std::move(res)};
+}
+
+std::string Level::getOverlayString() {
+	std::stringstream ss;
+	ss << "TIME: " << current_time <<" / " << time_limit << "   EMERALDS: " << current_score << " / " << needed_score;
+	return ss.str();
 }
 
 DrawData Level::update(int move) {

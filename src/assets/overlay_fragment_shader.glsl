@@ -14,4 +14,5 @@ void main() {
 		discard;
 	}
 	color = fragment_color;
+	// color = vec3(1.0, 1.0, 1.0);
 }

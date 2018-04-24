@@ -41,8 +41,7 @@ int main() {
 
 	// int x, y, dx, dy, tex;
 	DrawData text_draw_data;
-	Sprite letter_a_sprite (0, 0, 0, 0, 0);
-	text_draw_data.sprites.push_back(letter_a_sprite);
+	text_draw_data.sprites = textToSprites(test_level.getOverlayString(), -15, -22);
 
 	std::unique_ptr<GraphicsState> state = GraphicsState::create();
 	if (state == nullptr) {
@@ -62,7 +61,9 @@ int main() {
 			int move = state->getMove();
 			moves.push_back(move);
 			data = test_level.update(move);
+			text_draw_data.sprites = textToSprites(test_level.getOverlayString(), -15, -22);
 			state->setLevelDraw(data);
+			state->setOverlayDraw(text_draw_data);
 			++test_level.current_time;
 			ticks = 0;
 			if (test_level.current_time >= test_level.time_limit) time_limit_elapsed = true;

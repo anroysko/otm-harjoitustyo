@@ -30,6 +30,7 @@ public:
 	int needed_score;
 	int current_time;
 	int time_limit;
+	std::string getOverlayString();
 
 	Level() = default;
 	Level(int width, int height, int current_score, int needed_score, std::vector<int> &state);

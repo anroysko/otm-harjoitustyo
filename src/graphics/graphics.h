@@ -21,6 +21,8 @@ struct DrawData {
 	std::vector<Sprite> sprites;
 };
 
+std::vector<Sprite> textToSprites(std::string text, int first_x, int first_y);
+
 class GraphicsState {
 private:
 	// Variables

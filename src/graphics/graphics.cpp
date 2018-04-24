@@ -20,6 +20,30 @@ Sprite::Sprite(int x, int y, int dx, int dy, int tex) {
 	this->tex = tex;
 }
 
+std::vector<Sprite> textToSprites(std::string text, int first_x, int first_y) {
+	std::vector<Sprite> res;
+	int dx = 1;
+	for (int i = 0; i < text.size(); ++i) {
+		char c = text[i];
+		int ind = 0;
+		if (c == ' ') continue;
+		if ('A' <= c && c <= 'Z') {
+			ind = 0 + (c - 'A');
+		}
+		if ('0' <= c && c <= '9') {
+			ind = 26 + (c - '0');
+		}
+		if (c == ':') {
+			ind = 36;
+		}
+		if (c == '/') {
+			ind = 37;
+		}
+		Sprite sp(first_x + dx * i, first_y, 0, 0, ind);
+		res.push_back(sp);
+	}
+	return res;
+}
 
 // Opengl error callback function
 // Just outputs information about the error into the standard error stream
@@ -274,8 +298,8 @@ void GraphicsState::setLevelDraw(DrawData& data) {
 		std::vector<GLfloat> vertex_x = {(GLfloat)sp.x, (GLfloat)sp.x + 1};
 		// Invert y-axis
 		std::vector<GLfloat> vertex_y = {(GLfloat)(data.height - sp.y), (GLfloat)(data.height - (sp.y + 1))};
-		int th = (ATLAS_GRID_HEIGHT - 1) - (sp.tex / ATLAS_GRID_HEIGHT);
-		int tw = sp.tex % ATLAS_GRID_HEIGHT;
+		int th = (ATLAS_GRID_HEIGHT - 1) - (sp.tex / ATLAS_GRID_WIDTH);
+		int tw = sp.tex % ATLAS_GRID_WIDTH;
 		std::vector<GLfloat> uv_u = {(GLfloat)tw / ATLAS_GRID_WIDTH, (GLfloat)(tw + 1) / ATLAS_GRID_WIDTH};
 		// Invert y-axis
 		std::vector<GLfloat> uv_v = {(GLfloat)(th + 1) / ATLAS_GRID_HEIGHT, (GLfloat)th / ATLAS_GRID_HEIGHT};
@@ -302,9 +326,10 @@ void GraphicsState::setLevelDraw(DrawData& data) {
 }
 
 void GraphicsState::setOverlayDraw(DrawData& data) {
-	// Do nothing. Nothing to draw in overlay right now
-	// TODO:
 	int sprite_cou = data.sprites.size();
+	for (int i = 0; i < sprite_cou; ++i) {
+		std::cout << data.sprites[i].x << ' ' << data.sprites[i].y << ' ' << data.sprites[i].tex << "\n";
+	}
 	std::vector<GLfloat> vertex_buffer_data(2 * 6 * sprite_cou);
 	std::vector<GLfloat> uv_buffer_data(2 * 6 * sprite_cou);
 	std::vector<GLfloat> color_buffer_data(3 * 6 * sprite_cou);
@@ -324,9 +349,9 @@ void GraphicsState::setOverlayDraw(DrawData& data) {
 
 		std::vector<GLfloat> vertex_x = {(GLfloat)sp.x, (GLfloat)sp.x + 1};
 		// Invert y-axis
-		std::vector<GLfloat> vertex_y = {(GLfloat)(data.height - sp.y), (GLfloat)(data.height - (sp.y + 1))};
-		int th = (FONT_GRID_HEIGHT - 1) - (sp.tex / FONT_GRID_HEIGHT);
-		int tw = sp.tex % FONT_GRID_HEIGHT;
+		std::vector<GLfloat> vertex_y = {(GLfloat)(sp.y), (GLfloat)(sp.y - 1)};
+		int th = (FONT_GRID_HEIGHT - 1) - (sp.tex / FONT_GRID_WIDTH);
+		int tw = sp.tex % FONT_GRID_WIDTH;
 		std::vector<GLfloat> uv_u = {(GLfloat)tw / FONT_GRID_WIDTH, (GLfloat)(tw + 1) / FONT_GRID_WIDTH};
 		// Invert y-axis
 		std::vector<GLfloat> uv_v = {(GLfloat)(th + 1) / FONT_GRID_HEIGHT, (GLfloat)th / FONT_GRID_HEIGHT};
@@ -340,8 +365,8 @@ void GraphicsState::setOverlayDraw(DrawData& data) {
 			vertex_buffer_data[base + 2 * j + 1] = vertex_y[help[2 * j + 1]];
 			uv_buffer_data[base + 2 * j + 1] = uv_v[help[2 * j + 1]];
 		}
-		for (int j = 0; j < 18; ++j) color_buffer_data[18*i + j] = 0.5;
 	}
+	for (int j = 0; j < sprite_cou * 18; ++j) color_buffer_data[j] = 0.5;
 	// Buffer data
 	glBindBuffer(GL_ARRAY_BUFFER, overlay_vertex_buffer_id);
 	glBufferData(GL_ARRAY_BUFFER, vertex_buffer_data.size() * sizeof(GLfloat), &vertex_buffer_data[0], GL_STATIC_DRAW);
