@@ -7,6 +7,11 @@
 #include <utility>
 
 int main() {
+	std::cout << "\n";
+	std::cout << "***** generic emerald mining game! *****\n";
+	std::cout << "\n";
+	std::cout << "Please select level\n";
+
 	std::string level_path = promptFile();	
 	std::optional<Level> tmp = Level::parse(level_path);
 	if (! tmp) {
@@ -47,6 +52,7 @@ int main() {
 
 	int ticks = 0;
 	int ticks_per_move = 16;
+	bool time_limit_elapsed = false;
 	state->setLevelDraw(data);
 	state->setOverlayDraw(text_draw_data);
 	while (true) {
@@ -57,10 +63,22 @@ int main() {
 			moves.push_back(move);
 			data = test_level.update(move);
 			state->setLevelDraw(data);
+			++test_level.current_time;
 			ticks = 0;
+			if (test_level.current_time >= test_level.time_limit) time_limit_elapsed = true;
 		}
-		if (state->shouldQuit() || test_level.playerWon()) break;
+		if (state->shouldQuit() || test_level.playerWon() || time_limit_elapsed) break;
 	}
+	if (test_level.playerWon()) {
+		std::cout << "You won!\n";
+	} else if (time_limit_elapsed) {
+		std::cout << "You ran out of time!\n";
+	} else {
+		std::cout << "You closed the window!\n";
+	}
+	std::cout << "Time used: " << test_level.current_time << "/" << test_level.time_limit << "\n";
+	std::cout << "Emeralds mined: " << test_level.current_score << "/" << test_level.needed_score << "\n";
+
 	std::cout << "Replay vector: ";
 	std::cout << "{";
 	for (int i = 0; i < (int)moves.size() - 1; ++i) std::cout << moves[i] << ", ";

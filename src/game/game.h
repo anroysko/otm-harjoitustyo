@@ -11,10 +11,6 @@ private:
 	std::string name;
 	int width;
 	int height;
-	int current_score;
-	int needed_score;
-	int current_time;
-	int time_limit;
 	std::vector<int> state;  // Block type for this block
 
 	int pdx = 0;
@@ -30,6 +26,11 @@ private:
 	bool canSlideRight(int i, std::vector<bool> &moved);
 
 public:
+	int current_score;
+	int needed_score;
+	int current_time;
+	int time_limit;
+
 	Level() = default;
 	Level(int width, int height, int current_score, int needed_score, std::vector<int> &state);
 	static std::optional<Level> parse(std::string level_path);

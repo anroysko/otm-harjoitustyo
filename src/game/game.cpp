@@ -144,6 +144,12 @@ std::optional<Level> Level::parse(std::string file_path) {
 	}
 	fin >> res.needed_score;
 	fin >> res.time_limit;
+	if (fin.fail()) {
+		makeError() << "failed to read " << file_path << ", possibly it doesn't follow the format for levels\n";
+		return std::nullopt;
+	}
+	res.current_time = 0;
+	res.current_score = 0;
 	return std::optional<Level>{std::move(res)};
 }
 
