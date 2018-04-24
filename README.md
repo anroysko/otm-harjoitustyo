@@ -12,6 +12,8 @@ Ohjelma on toteutettu C++:lla.
 
 ## Komentorivitoiminnot
 
+Makefile kompiloi ohjelman käyttämällä compileria `g++7`. Vastaavaa voi käyttää vaihtamalla Makefilessä `$(CC)`:n joksikin muuksi. Koodi käyttää kuitenkin c++17-ominaisuuksia, joten hyvin uusi compiler vaaditaan.
+
 Ohjelman kompilointiin tarvitaan (ainakin) kirjastoja:
 ```
 libglfw3 libglew2.0 libgl1-mesa-dev
@@ -36,11 +38,20 @@ tyylin tarkastuksen voi tehdä komennolla
 ```
 make checkstyle
 ```
+
 ### Ohjelman ajaminen
 Ohjelman voi ajaa komennolla
 ```
 make run
 ```
+
+### Binäärin generoiminen
+Ajamalla komennon
+```
+make
+```
+source-kansiossa, generoi Make executablen pathilla `bin/main`. Sen voi ajaa komennolla `./bin/main` tai vaan käyttää `make run`-komentoa.
+
 ### Koodihakemiston puhdistaminen
 src-folderin voi puhdistaa kompiloitaessa luotavista tiedostoista komennolla
 ```
