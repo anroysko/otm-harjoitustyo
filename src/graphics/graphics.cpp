@@ -2,15 +2,15 @@
 #include <GLFW/glfw3.h>  // Helping with opengl
 #include <assert.h>
 #include <iostream>
-#include <memory>    // std::unique_ptr
-#include <string>    // std::string
-#include <vector>    // std::vector
+#include <memory>  // std::unique_ptr
 #include <optional>
+#include <string>  // std::string
+#include <vector>  // std::vector
 
+#include "./../util/bmp.h"    // Optional, loadBMP
+#include "./../util/error.h"  // makeError
 #include "graphics.h"
 #include "shader.h"  // makeProgram
-#include "./../util/error.h"    // makeError
-#include "./../util/bmp.h"    // Optional, loadBMP
 
 Sprite::Sprite(int x, int y, int dx, int dy, int tex) {
 	this->x = x;
@@ -73,7 +73,8 @@ void errorCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsiz
 	if (severity == GL_DEBUG_SEVERITY_LOW) severity_level = "GL_DEBUG_SEVERITY_LOW";
 	if (severity == GL_DEBUG_SEVERITY_NOTIFICATION) severity_level = "GL_DEBUG_SEVERITY_NOTIFICATION";
 
-	std::cerr << "**GL CALLBACK** " << " type: " << error_type << "(" << type << "), severity: " <<  severity_level << "(" << severity << "), message: " << message << '\n';
+	std::cerr << "**GL CALLBACK** "
+		  << " type: " << error_type << "(" << type << "), severity: " << severity_level << "(" << severity << "), message: " << message << '\n';
 }
 
 bool GraphicsState::initOpengl() {
@@ -188,7 +189,7 @@ bool GraphicsState::initBuffers() {
 	overlay_camera_dy_id = glGetUniformLocation(overlay_program_id, "camera_dy");
 	overlay_texture_sampler_id = glGetUniformLocation(overlay_program_id, "texture_sampler");
 	overlay_map_scale_id = glGetUniformLocation(overlay_program_id, "map_scale");
-	return true; // Nothing in this function can fail
+	return true;  // Nothing in this function can fail
 }
 
 bool GraphicsState::initTextures() {
@@ -220,7 +221,6 @@ bool GraphicsState::initTextures() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
-	
 	return true;
 }
 
@@ -242,7 +242,7 @@ bool GraphicsState::init() {
 		makeError() << "Failed to initialize textures\n";
 		return false;
 	}
-	
+
 	/*
 	std::cout << "program_id " << program_id << '\n';
 	std::cout << "vertex_array_object_id " << vertex_array_object_id << '\n';
@@ -289,8 +289,7 @@ void GraphicsState::setLevelDraw(DrawData& data) {
 		1, 0,
 		1, 1,
 		0, 1,
-		1, 0
-	};
+		1, 0};
 
 	for (int i = 0; i < sprite_cou; ++i) {
 		Sprite sp = data.sprites[i];
@@ -341,8 +340,7 @@ void GraphicsState::setOverlayDraw(DrawData& data) {
 		1, 0,
 		1, 1,
 		0, 1,
-		1, 0
-	};
+		1, 0};
 
 	for (int i = 0; i < sprite_cou; ++i) {
 		Sprite sp = data.sprites[i];
@@ -381,7 +379,7 @@ void GraphicsState::drawLevel(double dt, double time_per_step, DrawData& level_d
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, atlas_id);
 	glUniform1i(level_texture_sampler_id, 0);
-	
+
 	glBindBuffer(GL_ARRAY_BUFFER, level_vertex_buffer_id);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
@@ -395,9 +393,9 @@ void GraphicsState::drawLevel(double dt, double time_per_step, DrawData& level_d
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
 	// TODO: calculate player coordinates here
-	glUniform1f(level_move_scale_id, dt / time_per_step);					   // How much of a step has elapsed
+	glUniform1f(level_move_scale_id, dt / time_per_step);								  // How much of a step has elapsed
 	glUniform2f(level_map_scale_id, 2.0 * atlas_tile_width / screen_width, 2.0 * atlas_tile_height / screen_height);  // How wide and tall blocks should be (here, 64)
-	glUniform2f(level_player_pos_id, 4.0, 5.0);						   // Player coordinates
+	glUniform2f(level_player_pos_id, 4.0, 5.0);									  // Player coordinates
 
 	glDrawArrays(GL_TRIANGLES, 0, level_data.sprites.size() * 6);
 
@@ -411,7 +409,7 @@ void GraphicsState::drawOverlay(double dt, double time_per_step, DrawData& overl
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, font_id);
 	glUniform1i(overlay_texture_sampler_id, 0);
-	
+
 	glBindBuffer(GL_ARRAY_BUFFER, overlay_vertex_buffer_id);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
@@ -437,7 +435,7 @@ void GraphicsState::drawOverlay(double dt, double time_per_step, DrawData& overl
 void GraphicsState::draw(double dt, double time_per_step, DrawData& level_data, DrawData& overlay_data) {
 	// Update inputs
 	key_state.updateKeyState(window);
-	
+
 	// Clear previous
 	glClearColor(0.1, 0.1, 0.1, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT);

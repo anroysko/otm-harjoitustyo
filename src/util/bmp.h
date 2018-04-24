@@ -1,9 +1,9 @@
 #ifndef __UTIL_BMP_H_
 #define __UTIL_BMP_H_
 
-#include <vector>
-#include <string>
 #include <optional>
+#include <string>
+#include <vector>
 
 struct BMP {
 	int width;
@@ -13,4 +13,4 @@ struct BMP {
 
 std::optional<BMP> loadBMP(std::string file_path);
 
-#endif // __UTIL_BMP_H_
+#endif  // __UTIL_BMP_H_

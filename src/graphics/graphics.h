@@ -28,38 +28,38 @@ private:
 	// Variables
 	GLFWwindow* window;  // Pointer to window
 
-	int screen_width;   // Window width
-	int screen_height;  // Window height
-	GLuint vertex_array_object_id;		// VAO id
+	int screen_width;		// Window width
+	int screen_height;		// Window height
+	GLuint vertex_array_object_id;  // VAO id
 
-	GLuint level_program_id;		// Shader program id
-	GLuint level_vertex_buffer_id;  	// Buffer for vertex coordinates
-	GLuint level_uv_buffer_id;      	// Buffer for vertex uv (image) coordinates
-	GLuint level_dxy_buffer_id;     	// Buffer for vertex dx, dy (velocity) values.
-	GLuint level_map_scale_id;		// Uniform index for map scale
-	GLuint level_move_scale_id;		// Uniform index for move scale (Multiplier for dx, dy)
-	GLuint level_player_pos_id;		// Uniform index for player pos
-	GLuint level_texture_sampler_id;	// Uniform index for texture sampler
-	
-	GLuint overlay_program_id;		// Shader program id
-	GLuint overlay_vertex_buffer_id;  	// Buffer for vertex coordinates
-	GLuint overlay_uv_buffer_id;		// Buffer for vertex uv (image) coordinates
-	GLuint overlay_color_buffer_id;		// Buffer for vertex color values
-	GLuint overlay_map_scale_id;		// Uniform index for map scale
-	GLuint overlay_camera_dy_id;		// Uniform index for camera's dy
-	GLuint overlay_texture_sampler_id;	// Uniform index for texture sampler
+	GLuint level_program_id;	  // Shader program id
+	GLuint level_vertex_buffer_id;    // Buffer for vertex coordinates
+	GLuint level_uv_buffer_id;	// Buffer for vertex uv (image) coordinates
+	GLuint level_dxy_buffer_id;       // Buffer for vertex dx, dy (velocity) values.
+	GLuint level_map_scale_id;	// Uniform index for map scale
+	GLuint level_move_scale_id;       // Uniform index for move scale (Multiplier for dx, dy)
+	GLuint level_player_pos_id;       // Uniform index for player pos
+	GLuint level_texture_sampler_id;  // Uniform index for texture sampler
+
+	GLuint overlay_program_id;	  // Shader program id
+	GLuint overlay_vertex_buffer_id;    // Buffer for vertex coordinates
+	GLuint overlay_uv_buffer_id;	// Buffer for vertex uv (image) coordinates
+	GLuint overlay_color_buffer_id;     // Buffer for vertex color values
+	GLuint overlay_map_scale_id;	// Uniform index for map scale
+	GLuint overlay_camera_dy_id;	// Uniform index for camera's dy
+	GLuint overlay_texture_sampler_id;  // Uniform index for texture sampler
 
 	const int ATLAS_GRID_WIDTH = 4;
 	const int ATLAS_GRID_HEIGHT = 4;
 	int atlas_tile_width;
 	int atlas_tile_height;
-	GLuint atlas_id;	// Atlas texture id
+	GLuint atlas_id;  // Atlas texture id
 
 	const int FONT_GRID_WIDTH = 16;
 	const int FONT_GRID_HEIGHT = 4;
 	int font_symbol_width;
 	int font_symbol_height;
-	GLuint font_id;		// Font texture id
+	GLuint font_id;  // Font texture id
 
 	KeyState key_state;  // For keyboard input
 	// End variables

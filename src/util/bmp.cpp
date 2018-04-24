@@ -1,10 +1,10 @@
-#include <fstream>	// std::ifstream
-#include <utility>	// std::move
-#include <vector>	// std::vector
-#include <optional>	// std::optional
+#include <fstream>   // std::ifstream
+#include <optional>  // std::optional
+#include <utility>   // std::move
+#include <vector>    // std::vector
 
-#include "error.h"
 #include "bmp.h"
+#include "error.h"
 
 std::optional<BMP> loadBMP(std::string file_path) {
 	std::vector<unsigned char> header(54);

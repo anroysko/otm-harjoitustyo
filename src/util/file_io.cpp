@@ -1,7 +1,7 @@
-#include <fstream>   // std::ifstream
-#include <sstream>   // std::stringstream
-#include <utility>   // std::move
-#include <vector>    // std::vector
+#include <fstream>  // std::ifstream
+#include <sstream>  // std::stringstream
+#include <utility>  // std::move
+#include <vector>   // std::vector
 
 #include <optional>
 #include "error.h"
@@ -25,9 +25,9 @@ std::optional<std::string> readFile(std::string file_path) {
 // Prompts the user to select a file, and returns that file's path. Only works on specific versions of ubuntu linux
 std::string promptFile() {
 	FILE* file = popen("zenity --file-selection --filename=./assets/levels/collapsed_mine.txt", "r");
-	char buffer [1024];
+	char buffer[1024];
 	std::stringstream ss;
-	while(true) {
+	while (true) {
 		char* res = fgets(buffer, 1024, file);
 		if (res == nullptr) break;
 		ss << buffer;

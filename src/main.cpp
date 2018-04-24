@@ -1,10 +1,10 @@
 #include <iostream>
+#include <optional>
+#include <utility>
 #include "./game/game.h"
 #include "./graphics/graphics.h"
 #include "./graphics/keystate.h"
 #include "./util/file_io.h"
-#include <optional>
-#include <utility>
 
 int main() {
 	std::cout << "\n";
@@ -12,14 +12,14 @@ int main() {
 	std::cout << "\n";
 	std::cout << "Please select level\n";
 
-	std::string level_path = promptFile();	
+	std::string level_path = promptFile();
 	std::optional<Level> tmp = Level::parse(level_path);
-	if (! tmp) {
+	if (!tmp) {
 		std::cout << "Failed to parse level\n";
 		return 1;
 	}
 	Level test_level = std::move(tmp.value());
-	
+
 	/*
 	std::vector<int> test_level_data = {
 		7, 7, 7, 7, 7, 7, 7, 7,
@@ -34,14 +34,14 @@ int main() {
 		7, 7, 7, 7, 7, 7, 7, 7};
 	// width, height, current_score, needed_score
 	Level test_level(8, 10, 0, 10, test_level_data);
-	*/	
+	*/
 
 	std::vector<int> moves;
 	DrawData data = test_level.update(MOVE_NONE);
 
 	// int x, y, dx, dy, tex;
 	DrawData text_draw_data;
-	text_draw_data.sprites = textToSprites(test_level.getOverlayString(), -15, -22);
+	text_draw_data.sprites = textToSprites(test_level.getOverlayString(), -30, -22);
 
 	std::unique_ptr<GraphicsState> state = GraphicsState::create();
 	if (state == nullptr) {
@@ -61,7 +61,7 @@ int main() {
 			int move = state->getMove();
 			moves.push_back(move);
 			data = test_level.update(move);
-			text_draw_data.sprites = textToSprites(test_level.getOverlayString(), -15, -22);
+			text_draw_data.sprites = textToSprites(test_level.getOverlayString(), -30, -22);
 			state->setLevelDraw(data);
 			state->setOverlayDraw(text_draw_data);
 			++test_level.current_time;

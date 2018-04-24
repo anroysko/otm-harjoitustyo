@@ -1,10 +1,10 @@
 #ifndef __GAME_GAME_H_
 #define __GAME_GAME_H_
 
-#include <vector>
-#include <string>
-#include "./../graphics/graphics.h"
 #include <optional>
+#include <string>
+#include <vector>
+#include "./../graphics/graphics.h"
 
 class Level {
 private:
@@ -35,7 +35,7 @@ public:
 	Level() = default;
 	Level(int width, int height, int current_score, int needed_score, std::vector<int> &state);
 	static std::optional<Level> parse(std::string level_path);
-	
+
 	DrawData update(int move);
 	bool playerWon();
 };

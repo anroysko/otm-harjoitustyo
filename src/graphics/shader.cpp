@@ -1,13 +1,12 @@
 #include <GL/glew.h>  // Opengl functions
+#include <optional>   // std::optional
 #include <sstream>    // std::stringstream
 #include <string>     // std::string
 #include <vector>     // std::vector
-#include <optional>	// std::optional
 
+#include "./../util/error.h"    // makeError
+#include "./../util/file_io.h"  // readFile
 #include "shader.h"
-#include "./../util/error.h"	// makeError
-#include "./../util/file_io.h"	// readFile
-
 
 std::string getInfoLog(std::vector<char> info_log, int length) {
 	std::stringstream res;
@@ -41,9 +40,11 @@ std::optional<GLuint> compileShader(std::string& shader_path, GLenum shader_type
 		std::string log = getInfoLog(error_message, info_log_length);
 
 		if (result == GL_FALSE) {
-			makeError() << "Failed compilation of shader with path \"" << shader_path << "\"\n" << log << "\n";
+			makeError() << "Failed compilation of shader with path \"" << shader_path << "\"\n"
+				    << log << "\n";
 		} else {
-			makeNote() << "Info log nonempty for shader with path \"" << shader_path << "\"\n" << log << "\n";
+			makeNote() << "Info log nonempty for shader with path \"" << shader_path << "\"\n"
+				   << log << "\n";
 		}
 	}
 
@@ -74,9 +75,11 @@ std::optional<GLuint> linkProgram(GLuint vertex_shader_id, GLuint fragment_shade
 		std::string log = getInfoLog(error_message, info_log_length);
 
 		if (result == GL_FALSE) {
-			makeError() << "Linking program failed\n" << log << "\n";
+			makeError() << "Linking program failed\n"
+				    << log << "\n";
 		} else {
-			makeNote() << "Linking info log nonempty\n" << log << "\n";
+			makeNote() << "Linking info log nonempty\n"
+				   << log << "\n";
 		}
 	}
 
@@ -103,13 +106,16 @@ std::optional<GLuint> makeProgram(std::string& vertex_shader_path, std::string& 
 		glDeleteShader(vertex_shader_id);
 		return std::nullopt;
 	}
-	GLuint fragment_shader_id = std::move(tmp.value());;
+	GLuint fragment_shader_id = std::move(tmp.value());
+	;
 
 	tmp = linkProgram(vertex_shader_id, fragment_shader_id);
 	if (!tmp) {
 		glDeleteShader(vertex_shader_id);
 		glDeleteShader(fragment_shader_id);
-		makeError() << "Failed to link shader from shaders with paths:\n" << "  " << vertex_shader_path << "\n" << "  " << fragment_shader_path << "\n";
+		makeError() << "Failed to link shader from shaders with paths:\n"
+			    << "  " << vertex_shader_path << "\n"
+			    << "  " << fragment_shader_path << "\n";
 		return std::nullopt;
 	}
 	GLuint program_id = std::move(tmp.value());

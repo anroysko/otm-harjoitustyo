@@ -1,11 +1,11 @@
+#include <fstream>		     // std::ifstream
+#include <optional>		     // std::optional
+#include <sstream>		     // std::stringstream
+#include <utility>		     // std::move
 #include <vector>		     // std::vector
-#include <optional>		// std::optional
-#include <utility>		// std::move
-#include <fstream>		// std::ifstream
-#include <sstream>		// std::stringstream
-#include "./../util/error.h"	// makeError()
 #include "./../graphics/graphics.h"  // DrawData
 #include "./../graphics/keystate.h"  // Move constants
+#include "./../util/error.h"	 // makeError()
 
 #include "game.h"
 
@@ -156,7 +156,7 @@ std::optional<Level> Level::parse(std::string file_path) {
 
 std::string Level::getOverlayString() {
 	std::stringstream ss;
-	ss << "TIME: " << current_time <<" / " << time_limit << "   EMERALDS: " << current_score << " / " << needed_score;
+	ss << "LEVEL: " << name << "    TIME: " << current_time << " / " << time_limit << "    EMERALDS: " << current_score << " / " << needed_score;
 	return ss.str();
 }
 

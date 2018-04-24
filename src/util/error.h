@@ -16,5 +16,4 @@ inline std::ostream& makeNote(int line = __builtin_LINE(), const char* func = __
 	return std::cerr;
 }
 
-#endif // __UTIL_ERROR_H_
-
+#endif  // __UTIL_ERROR_H_
