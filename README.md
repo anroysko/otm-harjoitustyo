@@ -12,7 +12,7 @@ Ohjelma on toteutettu C++:lla.
 
 ## Komentorivitoiminnot
 
-Makefile kompiloi ohjelman käyttämällä compileria `g++7`. Vastaavaa voi käyttää vaihtamalla Makefilessä `$(CC)`:n joksikin muuksi. Koodi käyttää kuitenkin c++17-ominaisuuksia, joten hyvin uusi compiler vaaditaan.
+Makefile kompiloi ohjelman käyttämällä compileria `g++-7`. Vastaavaa voi käyttää vaihtamalla Makefilessä `$(CC)`:n joksikin muuksi. Koodi käyttää kuitenkin c++17-ominaisuuksia, joten hyvin uusi compiler vaaditaan.
 
 Ohjelman kompilointiin tarvitaan (ainakin) kirjastoja:
 ```
@@ -23,6 +23,9 @@ Testikattavuusraportin generointiin tarvitsee ohjelman `lcov`
 Tyylin tarkistamiseen tarvitsee ohjelman `clang-format-3.9`. Eri versioita voi myös käyttää, mutta silloin Makefilessä pitää vaihtaa `$(clang_format_program)` haluttuun.
 
 Ne voi asentaa aptista
+
+### Releaset
+[Viikko 5](https://github.com/anroysko/otm-harjoitustyo/tree/0.1.0)
 
 ### Testaus
 Testit suoritetaan komennolla
