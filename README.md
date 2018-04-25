@@ -54,7 +54,7 @@ Ajamalla komennon
 ```
 make
 ```
-source-kansiossa, generoi Make executablen pathilla `bin/main`. Sen voi ajaa komennolla `./bin/main` tai vaan käyttää `make run`-komentoa.
+source-kansiossa, generoi Make executablen pathilla `src/bin/main`. Sen voi ajaa src-kansiossa komennolla `./bin/main` tai vaan käyttää `make run`-komentoa. Huomaa että koodi olettaa että se ajetaan src-kansiossa.
 
 ### Koodihakemiston puhdistaminen
 src-folderin voi puhdistaa kompiloitaessa luotavista tiedostoista komennolla
