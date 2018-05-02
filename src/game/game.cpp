@@ -110,7 +110,7 @@ Level::Level(int width, int height, int current_score, int needed_score, std::ve
 
 // Parses a level from the file_path
 // TODO: error if level format is incorrect
-std::optional<Level> Level::parse(std::string file_path) {
+std::optional<Level> Level::parse(const std::string& file_path) {
 	// Example level:
 	/*
 		lots of rocks		// Level name

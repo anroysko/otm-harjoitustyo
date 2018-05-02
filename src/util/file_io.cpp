@@ -2,13 +2,17 @@
 #include <sstream>  // std::stringstream
 #include <utility>  // std::move
 #include <vector>   // std::vector
+#include <optional> // std::optional
+#include <string>   // std::string
 
-#include <optional>
-#include "error.h"
+#include "error.h" // makeError()
 #include "file_io.h"
 
+/// @file = file_io.cpp
+/// Implements file_io.h
+
 // reads contents of file to a string
-std::optional<std::string> readFile(std::string file_path) {
+std::optional<std::string> readFile(const std::string& file_path) {
 	std::ifstream in;
 	in.open(file_path);
 	if (!in.is_open()) {
@@ -22,8 +26,8 @@ std::optional<std::string> readFile(std::string file_path) {
 	return std::optional<std::string>{std::move(res)};
 }
 
-// Prompts the user to select a file, and returns that file's path. Only works on specific versions of ubuntu linux
-std::string promptFile() {
+// Prompts the user to select a file, and returns that file's path.
+std::optional<std::string> promptFile() {
 	FILE* file = popen("zenity --file-selection --filename=./assets/levels/collapsed_mine.txt", "r");
 	char buffer[1024];
 	std::stringstream ss;
@@ -35,5 +39,6 @@ std::string promptFile() {
 	pclose(file);
 	std::string res;
 	ss >> res;
-	return res;
+	if (res.size() == 0) return std::nullopt;
+	else return std::optional<std::string>{std::move(res)};
 }

@@ -6,19 +6,27 @@
 #include "./graphics/keystate.h"
 #include "./util/file_io.h"
 
+/// @file main.cpp
+/// Contains the main-function
+
+/// main-function.
 int main() {
 	std::cout << "\n";
 	std::cout << "***** generic emerald mining game! *****\n";
 	std::cout << "\n";
 	std::cout << "Please select level\n";
 
-	std::string level_path = promptFile();
-	std::optional<Level> tmp = Level::parse(level_path);
+	std::optional<std::string> level_path = promptFile();
+	if (! level_path) {
+		std::cout << "No level selected. Exiting...\n";
+		return 0;
+	}
+	std::optional<Level> tmp = Level::parse(*level_path);
 	if (!tmp) {
 		std::cout << "Failed to parse level\n";
 		return 1;
 	}
-	Level test_level = std::move(tmp.value());
+	Level test_level = *tmp;
 
 	/*
 	std::vector<int> test_level_data = {

@@ -8,14 +8,20 @@
 #include "./../util/file_io.h"  // readFile
 #include "shader.h"
 
-std::string getInfoLog(std::vector<char> info_log, int length) {
+/// @file = shader.cpp
+/// Implements shader.h
+
+/// Moves the info log from a char vector to a string.
+std::string getInfoLog(const std::vector<char>& info_log, int length) {
 	std::stringstream res;
 	res << "Info log:\n";
 	for (int i = 0; i < length; ++i) res << info_log[i];
 	return res.str();
 }
 
-std::optional<GLuint> compileShader(std::string& shader_path, GLenum shader_type) {
+/// Compiles the given shader.
+/// returns std::nullopt if compiling the shader failed
+std::optional<GLuint> compileShader(const std::string& shader_path, GLenum shader_type) {
 	GLuint shader_id = glCreateShader(shader_type);
 
 	std::optional<std::string> tmp = readFile(shader_path);
@@ -56,8 +62,8 @@ std::optional<GLuint> compileShader(std::string& shader_path, GLenum shader_type
 	}
 }
 
-// Input: id for vertex and fragment shaders
-// Returns linked shader program id. If linking fails, returns -1
+/// Links a vertex shader and a fragment shader into a shader program.
+/// Returns std::nullopt if linking fails.
 std::optional<GLuint> linkProgram(GLuint vertex_shader_id, GLuint fragment_shader_id) {
 	GLuint program_id = glCreateProgram();
 	glAttachShader(program_id, vertex_shader_id);
@@ -93,9 +99,8 @@ std::optional<GLuint> linkProgram(GLuint vertex_shader_id, GLuint fragment_shade
 	}
 }
 
-// Compiles a shader program from the given vertex and fragment shaders
-// Returns id of the shader program. If compilation fails, returns -1
-std::optional<GLuint> makeProgram(std::string& vertex_shader_path, std::string& fragment_shader_path) {
+// Creates a shader program from the given sources for a vertex shader and fragment shader
+std::optional<GLuint> makeProgram(const std::string& vertex_shader_path, const std::string& fragment_shader_path) {
 	std::optional<GLuint> tmp = std::nullopt;
 	tmp = compileShader(vertex_shader_path, GL_VERTEX_SHADER);
 	if (!tmp) return std::nullopt;

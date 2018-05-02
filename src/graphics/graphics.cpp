@@ -1,16 +1,19 @@
-#include <GL/glew.h>     // Opengl functions
-#include <GLFW/glfw3.h>  // Helping with opengl
-#include <assert.h>
-#include <iostream>
-#include <memory>  // std::unique_ptr
-#include <optional>
-#include <string>  // std::string
-#include <vector>  // std::vector
+#include <GL/glew.h>    // Opengl functions
+#include <GLFW/glfw3.h> // Helping with opengl
+#include <assert.h>     // assert
+#include <iostream>     // std::ostream
+#include <memory>       // std::unique_ptr
+#include <optional>     // std::optional
+#include <string>       // std::string
+#include <vector>       // std::vector
 
-#include "./../util/bmp.h"    // Optional, loadBMP
-#include "./../util/error.h"  // makeError
-#include "graphics.h"
-#include "shader.h"  // makeProgram
+#include "./../util/bmp.h"   // Optional, loadBMP
+#include "./../util/error.h" // makeError
+#include "shader.h"          // makeProgram
+#include "graphics.h"        
+
+/// @file=graphics.cpp
+/// Implements graphics.h
 
 Sprite::Sprite(int x, int y, int dx, int dy, int tex) {
 	this->x = x;
@@ -20,6 +23,7 @@ Sprite::Sprite(int x, int y, int dx, int dy, int tex) {
 	this->tex = tex;
 }
 
+// Creates sprites from text
 std::vector<Sprite> textToSprites(std::string text, int first_x, int first_y) {
 	std::vector<Sprite> res;
 	int dx = 1;
@@ -45,8 +49,8 @@ std::vector<Sprite> textToSprites(std::string text, int first_x, int first_y) {
 	return res;
 }
 
-// Opengl error callback function
-// Just outputs information about the error into the standard error stream
+/// Opengl error callback function.
+/// Outputs information about the encountered error, warning or note into the standard error stream.
 void errorCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
 	if (type == GL_DEBUG_TYPE_ERROR) {
 		makeError();
@@ -77,6 +81,7 @@ void errorCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsiz
 		  << " type: " << error_type << "(" << type << "), severity: " << severity_level << "(" << severity << "), message: " << message << '\n';
 }
 
+// Initialize openGL
 bool GraphicsState::initOpengl() {
 	// Initialize glfw
 	if (!glfwInit()) {
@@ -146,6 +151,7 @@ bool GraphicsState::initOpengl() {
 	return true;
 }
 
+// Initialize shaders
 bool GraphicsState::initShaders() {
 	std::string level_vertex_shader_path = "assets/level_vertex_shader.glsl";
 	std::string level_fragment_shader_path = "assets/level_fragment_shader.glsl";
@@ -162,6 +168,7 @@ bool GraphicsState::initShaders() {
 	return true;
 }
 
+// Initialize buffers
 bool GraphicsState::initBuffers() {
 	glGenVertexArrays(1, &vertex_array_object_id);
 	glBindVertexArray(vertex_array_object_id);
@@ -192,6 +199,7 @@ bool GraphicsState::initBuffers() {
 	return true;  // Nothing in this function can fail
 }
 
+// Initialize textures
 bool GraphicsState::initTextures() {
 	std::string atlas_path = "assets/atlas.bmp";
 	std::optional<BMP> tmp = loadBMP(atlas_path);
@@ -226,6 +234,7 @@ bool GraphicsState::initTextures() {
 	return true;
 }
 
+// Initialize the graphics state
 bool GraphicsState::init() {
 	// Order is important!
 	if (!initOpengl()) {
@@ -245,39 +254,22 @@ bool GraphicsState::init() {
 		return false;
 	}
 
-	/*
-	std::cout << "program_id " << program_id << '\n';
-	std::cout << "vertex_array_object_id " << vertex_array_object_id << '\n';
-	std::cout << "vertex_buffer_id " << vertex_buffer_id << '\n';
-	std::cout << "uv_buffer_id " << uv_buffer_id << '\n';
-	std::cout << "dxy_buffer_id " << dxy_buffer_id << '\n';
-	std::cout << "map_scale_id " << map_scale_id << '\n';
-	std::cout << "move_scale_id " << move_scale_id << '\n';
-	std::cout << "player_pos_id " << player_pos_id << '\n';
-	std::cout << "texture_sampler_id " << texture_sampler_id << '\n';
-	std::cout << "ATLAS_GRID_HEIGHT " << ATLAS_GRID_HEIGHT << '\n';
-	std::cout << "ATLAS_GRID_WIDTH " << ATLAS_GRID_WIDTH << '\n';
-	std::cout << "atlas_tile_width " << atlas_tile_width << '\n';
-	std::cout << "atlas_tile_height " << atlas_tile_height << '\n';
-	std::cout << "screen_width " << screen_width << '\n';
-	std::cout << "screen_height " << screen_height << '\n';
-	std::cout << "atlas_id " << atlas_id << '\n';
-	*/
 	return true;
 }
 
 GraphicsState::~GraphicsState() {
 	// TODO: actually safely quit
-	// Not really a high priority though :Dd
 	glfwTerminate();
 }
 
+// Factory method.
 std::unique_ptr<GraphicsState> GraphicsState::create() {
 	std::unique_ptr<GraphicsState> state(new GraphicsState);
 	if (!state->init()) state = nullptr;
 	return state;
 }
 
+// Set what to draw in the level-layer
 void GraphicsState::setLevelDraw(DrawData& data) {
 	int sprite_cou = data.sprites.size();
 	std::vector<GLfloat> vertex_buffer_data(2 * 6 * sprite_cou);
@@ -326,6 +318,7 @@ void GraphicsState::setLevelDraw(DrawData& data) {
 	glBufferData(GL_ARRAY_BUFFER, dxy_buffer_data.size() * sizeof(GLfloat), &dxy_buffer_data[0], GL_STATIC_DRAW);
 }
 
+// Set what to draw on the overlay level
 void GraphicsState::setOverlayDraw(DrawData& data) {
 	int sprite_cou = data.sprites.size();
 	for (int i = 0; i < sprite_cou; ++i) {
@@ -376,6 +369,7 @@ void GraphicsState::setOverlayDraw(DrawData& data) {
 	glBufferData(GL_ARRAY_BUFFER, color_buffer_data.size() * sizeof(GLfloat), &color_buffer_data[0], GL_STATIC_DRAW);
 }
 
+// Draw the level
 void GraphicsState::drawLevel(double dt, double time_per_step, DrawData& level_data) {
 	glUseProgram(level_program_id);
 	glActiveTexture(GL_TEXTURE0);
@@ -406,6 +400,7 @@ void GraphicsState::drawLevel(double dt, double time_per_step, DrawData& level_d
 	glDisableVertexAttribArray(2);
 }
 
+// Draw the overlay
 void GraphicsState::drawOverlay(double dt, double time_per_step, DrawData& overlay_data) {
 	glUseProgram(overlay_program_id);
 	glActiveTexture(GL_TEXTURE0);
@@ -434,6 +429,7 @@ void GraphicsState::drawOverlay(double dt, double time_per_step, DrawData& overl
 	glDisableVertexAttribArray(2);
 }
 
+// Draw
 void GraphicsState::draw(double dt, double time_per_step, DrawData& level_data, DrawData& overlay_data) {
 	// Update inputs
 	key_state.updateKeyState(window);
@@ -454,18 +450,14 @@ void GraphicsState::draw(double dt, double time_per_step, DrawData& level_data, 
 	glfwSwapBuffers(window);
 }
 
+// Get keyboard input
 int GraphicsState::getMove() {
 	return key_state.getMove();
 }
 
+// Whether this graphics state should close
 bool GraphicsState::shouldQuit() {
 	if (key_state.esc_pressed) return true;
 	if (glfwWindowShouldClose(window)) return true;
 	return false;
-}
-
-// TODO: remove
-// For temporary testing
-int multiply(int a, int b) {
-	return a * b;
 }

@@ -1,5 +1,6 @@
 CC := g++-7
 clang_format_program := clang-format-3.9
+doc_program := doxygen
 
 link_flags := -lglfw -lGLEW -lGL
 compile_flags := -O2 -std=c++17
@@ -13,13 +14,16 @@ bin_path := $(target)/bin/
 cov_path := $(target)/cov/
 doc_path := $(target)/doc/
 
-sources := $(main).cpp $(tester).cpp game/game.cpp graphics/graphics.cpp graphics/shader.cpp graphics/keystate.cpp util/bmp.cpp util/file_io.cpp
+sources := $(main).cpp $(tester).cpp game/game.cpp graphics/graphics.cpp graphics/shader.cpp graphics/keystate.cpp util/bmp.cpp util/file_io.cpp util/error.cpp
 objects := $(addprefix $(bin_path), $(sources:.cpp=.o))
 depends := $(addprefix $(bin_path), $(sources:.cpp=.d))
 cov_objects := $(addprefix $(cov_path), $(sources:.cpp=.o))
 cov_depends := $(addprefix $(cov_path), $(sources:.cpp=.d))
 cov_exclude_files := graphics/* util/error.h
+
 stylecheck_files := $(sources) game/game.h graphics/graphics.h graphics/shader.h graphics/keystate.h util/bmp.h util/file_io.h util/error.h
+doc_config := $(doc_program).ini
+doc_style := $(doc_program)_style.css
 
 # 
 # Don't change anything after this
@@ -87,6 +91,16 @@ fixstyle :
 	@for SOURCENAME in $(stylecheck_files); do\
 		$(clang_format_program) -i $$SOURCENAME;\
 	done
+
+.PHONY : doc
+doc :
+	$(doc_program) $(doc_config) >/dev/null 2>/dev/null
+	@echo created documentation html index.html in $(doc_path)html/index.html
+
+.PHONY : fulldoc
+fulldoc :
+	@(cat $(doc_config) ; echo "\n SOURCE_BROWSER = YES \n VERBATIM_HEADERS = YES \n FILE_PATTERNS = *.cpp *.h *.md") | $(doc_program) - >/dev/null 2>/dev/null
+	@echo created documentation html index.html in $(doc_path)html/index.html
 
 .PHONY : clean
 clean :

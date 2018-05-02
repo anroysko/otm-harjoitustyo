@@ -8,10 +8,14 @@
 
 class Level {
 private:
+	/// Name of the level
 	std::string name;
+	/// Width of the level
 	int width;
+	/// Height of the level
 	int height;
-	std::vector<int> state;  // Block type for this block
+	/// Two-dimensional array that stores which block is where
+	std::vector<int> state;
 
 	int pdx = 0;
 	int pdy = 0;
@@ -34,7 +38,7 @@ public:
 
 	Level() = default;
 	Level(int width, int height, int current_score, int needed_score, std::vector<int> &state);
-	static std::optional<Level> parse(std::string level_path);
+	static std::optional<Level> parse(const std::string& level_path);
 
 	DrawData update(int move);
 	bool playerWon();

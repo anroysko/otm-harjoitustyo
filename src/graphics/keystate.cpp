@@ -1,13 +1,16 @@
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
-#include <iostream>
-#include <vector>
+#include <GL/glew.h>    // Opengl functions
+#include <GLFW/glfw3.h> // Opengl helper
+#include <vector>       // std::vector
 
 #include "keystate.h"
+
+/// @file=keystate.cpp
+/// Implements keystate.h .
 
 const int KEYSTATE_RELEASED = 0;
 const int KEYSTATE_PRESSED = 1;
 const int KEYSTATE_DOWN = 2;
+/// Keys on the keyboard that should be kept track of
 const std::vector<int> KEYS_TO_RECORD = {GLFW_KEY_LEFT, GLFW_KEY_RIGHT, GLFW_KEY_DOWN, GLFW_KEY_UP};
 
 /*
