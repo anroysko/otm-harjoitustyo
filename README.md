@@ -16,7 +16,7 @@ Ohjelma on toteutettu C++:lla.
 
 ## Komentorivitoiminnot
 
-Makefile kompiloi ohjelman käyttämällä compileria `g++-7`. Vastaavaa voi käyttää vaihtamalla käytettävän compilerin makefilessä. Koodi käyttää kuitenkin c++17-ominaisuuksia, joten hyvin uusi compiler vaaditaan.
+Makefile kompiloi ohjelman käyttämällä compileria `g++-7`. Vastaavaa voi käyttää vaihtamalla `$(CC)` -muuttujan makefilessä. Koodi käyttää kuitenkin c++17-ominaisuuksia, joten hyvin uusi compiler vaaditaan.
 
 Ohjelman kompilointiin tarvitaan (ainakin) kirjastoja:
 
