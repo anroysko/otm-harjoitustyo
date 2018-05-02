@@ -23,7 +23,6 @@ cov_exclude_files := graphics/* util/error.h
 
 stylecheck_files := $(sources) game/game.h graphics/graphics.h graphics/shader.h graphics/keystate.h util/bmp.h util/file_io.h util/error.h
 doc_config := $(doc_program).ini
-doc_style := $(doc_program)_style.css
 
 # 
 # Don't change anything after this
@@ -99,7 +98,7 @@ doc :
 
 .PHONY : fulldoc
 fulldoc :
-	@(cat $(doc_config) ; echo "\n SOURCE_BROWSER = YES \n VERBATIM_HEADERS = YES \n FILE_PATTERNS = *.cpp *.h *.md") | $(doc_program) - >/dev/null 2>/dev/null
+	@(cat $(doc_config) ; echo "\n EXTRACT_PRIVATE = YES \n EXTRACT_PACKAGE = YES \n EXTRACT_STATIC = YES \n SOURCE_BROWSER = YES \n VERBATIM_HEADERS = YES \n FILE_PATTERNS = *.cpp *.h *.md") | $(doc_program) - >/dev/null 2>/dev/null
 	@echo created documentation html index.html in $(doc_path)html/index.html
 
 .PHONY : clean
