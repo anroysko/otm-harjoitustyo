@@ -321,9 +321,6 @@ void GraphicsState::setLevelDraw(DrawData& data) {
 // Set what to draw on the overlay level
 void GraphicsState::setOverlayDraw(DrawData& data) {
 	int sprite_cou = data.sprites.size();
-	for (int i = 0; i < sprite_cou; ++i) {
-		std::cout << data.sprites[i].x << ' ' << data.sprites[i].y << ' ' << data.sprites[i].tex << "\n";
-	}
 	std::vector<GLfloat> vertex_buffer_data(2 * 6 * sprite_cou);
 	std::vector<GLfloat> uv_buffer_data(2 * 6 * sprite_cou);
 	std::vector<GLfloat> color_buffer_data(3 * 6 * sprite_cou);

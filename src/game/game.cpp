@@ -7,7 +7,8 @@
 #include "./../graphics/keystate.h"  // Move constants
 #include "./../util/error.h"	 // makeError()
 
-#include "game.h"
+#include "game.h" // Implement functions for
+/// @file=game.cpp
 
 // TODO: redo
 
@@ -160,6 +161,7 @@ std::string Level::getOverlayString() {
 	return ss.str();
 }
 
+// TODO: redo
 DrawData Level::update(int move) {
 	pdx = 0;
 	pdy = 0;
@@ -341,10 +343,4 @@ bool Level::playerWon() {
 		if (it == GOAL) return false;
 	}
 	return true;
-}
-
-// TMP thing for testing
-// TODO: remove
-int add(int a, int b) {
-	return a + b;
 }
