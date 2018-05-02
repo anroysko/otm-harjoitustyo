@@ -8,14 +8,16 @@ cov_compile_flags := --coverage -std=c++17
 
 main := main
 tester := testing/tester
-bin_path := bin/
-cov_bin_path := bin/cov/
+target := target
+bin_path := $(target)/bin/
+cov_path := $(target)/cov/
+doc_path := $(target)/doc/
 
 sources := $(main).cpp $(tester).cpp game/game.cpp graphics/graphics.cpp graphics/shader.cpp graphics/keystate.cpp util/bmp.cpp util/file_io.cpp
 objects := $(addprefix $(bin_path), $(sources:.cpp=.o))
 depends := $(addprefix $(bin_path), $(sources:.cpp=.d))
-cov_objects := $(addprefix $(cov_bin_path), $(sources:.cpp=.o))
-cov_depends := $(addprefix $(cov_bin_path), $(sources:.cpp=.d))
+cov_objects := $(addprefix $(cov_path), $(sources:.cpp=.o))
+cov_depends := $(addprefix $(cov_path), $(sources:.cpp=.d))
 cov_exclude_files := graphics/* util/error.h
 stylecheck_files := $(sources) game/game.h graphics/graphics.h graphics/shader.h graphics/keystate.h util/bmp.h util/file_io.h util/error.h
 
@@ -31,7 +33,7 @@ $(bin_path)$(tester) : $(filter-out $(bin_path)$(main).o, $(objects))
 	@mkdir -p $(dir $@)
 	$(CC) $(compile_flags) $^ -o $@ $(link_flags)
 
-$(cov_bin_path)$(tester) : $(filter-out $(cov_bin_path)$(main).o, $(cov_objects))
+$(cov_path)$(tester) : $(filter-out $(cov_path)$(main).o, $(cov_objects))
 	@mkdir -p $(dir $@)
 	$(CC) $(cov_compile_flags) $^ -o $@ $(cov_link_flags)
 
@@ -42,20 +44,20 @@ $(bin_path)%.o : %.cpp
 	@mkdir -p $(dir $@)
 	$(CC) $(compile_flags) -c -MMD $< -o $@
 
-$(cov_bin_path)%.o : %.cpp
+$(cov_path)%.o : %.cpp
 	@mkdir -p $(dir $@)
 	$(CC) $(cov_compile_flags) -c -MMD $< -o $@
 
-$(cov_bin_path)html/index.html : $(cov_bin_path)$(tester)
-	@lcov -q -o $(cov_bin_path)initcovdata.info -c -i -d $(cov_bin_path) -b $(cov_bin_path) 2>/dev/null				# Generate empty coverage data
-	@./$(cov_bin_path)$(tester)													# Run tests
-	@gcov $(cov_bin_path)$(tester) -r >/dev/null											# Generate gcov coverage data from our run
-	@lcov -q -o $(cov_bin_path)runcovdata.info -c -d $(cov_bin_path) -b $(cov_bin_path) 2>/dev/null					# Generate lcov coverage data from gcov coverage data
-	@lcov -q -a $(cov_bin_path)initcovdata.info -a $(cov_bin_path)runcovdata.info -o $(cov_bin_path)rescovdata.info 2>/dev/null	# Combine empty coverage and generated coverage files
-	@lcov -q -e $(cov_bin_path)rescovdata.info "`pwd`/*" -o $(cov_bin_path)rescovdata.info 2>/dev/null				# Remove all but files in directory, do not generate coverage for stl/other library files.
-	@lcov -q --remove $(cov_bin_path)rescovdata.info -o $(cov_bin_path)rescovdata.info $(cov_exclude_files) 2>/dev/null		# Remove all files that need to be excluded
-	@genhtml -q -o $(cov_bin_path)html/ $(cov_bin_path)rescovdata.info 2>/dev/null							# Generate HTML from lcov coverage data
-	@echo created coverage report index.html in $(cov_bin_path)html/index.html
+$(cov_path)html/index.html : $(cov_path)$(tester)
+	@lcov -q -o $(cov_path)initcovdata.info -c -i -d $(cov_path) -b $(cov_path) >/dev/null 2>/dev/null				# Generate empty coverage data
+	@./$(cov_path)$(tester)														# Run tests
+	@gcov $(cov_path)$(tester) -r 2>/dev/null >/dev/null										# Generate gcov coverage data from our run
+	@lcov -q -o $(cov_path)runcovdata.info -c -d $(cov_path) -b $(cov_path) >/dev/null 2>/dev/null					# Generate lcov coverage data from gcov coverage data
+	@lcov -q -a $(cov_path)initcovdata.info -a $(cov_path)runcovdata.info -o $(cov_path)rescovdata.info >/dev/null 2>/dev/null	# Combine empty coverage and generated coverage files
+	@lcov -q -e $(cov_path)rescovdata.info "`pwd`/*" -o $(cov_path)rescovdata.info >/dev/null 2>/dev/null				# Remove all but files in directory, do not generate coverage for stl/other library files.
+	@lcov -q --remove $(cov_path)rescovdata.info -o $(cov_path)rescovdata.info $(cov_exclude_files) >/dev/null 2>/dev/null		# Remove all files that need to be excluded
+	@genhtml -q -o $(cov_path)html/ $(cov_path)rescovdata.info >/dev/null 2>/dev/null						# Generate HTML from lcov coverage data
+	@echo created coverage report index.html in $(cov_path)html/index.html
 
 .PHONY : test
 test : $(bin_path)$(tester)
@@ -66,11 +68,11 @@ run : $(bin_path)$(main)
 	@./$(bin_path)$(main)
 
 .PHONY : coverage
-coverage : $(cov_bin_path)html/index.html
+coverage : $(cov_path)html/index.html
 
 .PHONY : showcoverage
 showcoverage : coverage
-	xdg-open $(cov_bin_path)html/index.html 2>/dev/null
+	xdg-open $(cov_path)html/index.html 2>/dev/null
 
 .PHONY : checkstyle
 checkstyle :
@@ -88,4 +90,4 @@ fixstyle :
 
 .PHONY : clean
 clean :
-	@rm -rf $(bin_path)
+	@rm -rf $(target)
