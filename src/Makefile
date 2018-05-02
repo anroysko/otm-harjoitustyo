@@ -19,7 +19,7 @@ objects := $(addprefix $(bin_path), $(sources:.cpp=.o))
 depends := $(addprefix $(bin_path), $(sources:.cpp=.d))
 cov_objects := $(addprefix $(cov_path), $(sources:.cpp=.o))
 cov_depends := $(addprefix $(cov_path), $(sources:.cpp=.d))
-cov_exclude_files := graphics/* util/error.h
+cov_exclude_files := graphics/* util/*
 
 stylecheck_files := $(sources) game/game.h graphics/graphics.h graphics/shader.h graphics/keystate.h util/bmp.h util/file_io.h util/error.h
 doc_config := $(doc_program).ini
