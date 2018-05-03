@@ -16,6 +16,7 @@ Ohjelma on toteutettu C++:lla.
 
 ## Releaset
 [Viikko 5](https://github.com/anroysko/otm-harjoitustyo/tree/0.1.0)
+
 [Viikko 6](https://github.com/anroysko/otm-harjoitustyo/tree/0.2.0)
 
 ## Komentorivitoiminnot
