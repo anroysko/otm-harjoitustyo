@@ -7,7 +7,7 @@
 #include "./../graphics/keystate.h"  // Move constants
 #include "./../util/error.h"	 // makeError()
 
-#include "game.h" // Implement functions for
+#include "game.h"  // Implement functions for
 /// @file=game.cpp
 
 // TODO: redo
@@ -111,7 +111,7 @@ Level::Level(int width, int height, int current_score, int needed_score, std::ve
 
 // Parses a level from the file_path
 // TODO: error if level format is incorrect
-std::optional<Level> Level::parse(const std::string& file_path) {
+std::optional<Level> Level::parse(const std::string &file_path) {
 	// Example level:
 	/*
 		lots of rocks		// Level name
@@ -136,6 +136,13 @@ std::optional<Level> Level::parse(const std::string& file_path) {
 	}
 
 	Level res;
+	std::string file_type;
+	std::getline(fin, file_type);
+	if (file_type != "LEVEL") {
+		makeError() << "Not a level: " << file_path << '\n';
+		fin.close();
+		return std::nullopt;
+	}
 	std::getline(fin, res.name);
 	fin >> res.width >> res.height;
 	res.state.resize(res.width * res.height);

@@ -1,3 +1,4 @@
+LEVEL
 COLLAPSED MINE
 8 10
 7  7  7  7  7  7  7  7 

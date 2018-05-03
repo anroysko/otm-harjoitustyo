@@ -4,9 +4,9 @@
 /// @file=shader.h
 /// Functions for compiling shaders and shader programs.
 
-#include <GL/glew.h> // Opengl functions
-#include <optional> // std::optional
-#include <string>  // std::string
+#include <GL/glew.h>  // Opengl functions
+#include <optional>   // std::optional
+#include <string>     // std::string
 
 /// Creates a shader program, compiling shaders from the given paths.
 /// Returns std::nullopt if compiling the shader failed

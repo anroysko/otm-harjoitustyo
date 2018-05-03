@@ -10,5 +10,6 @@
 | 10.4. | 4 | Testit ja testikattavuus konffittu Makefileen |
 | 17.4. | 4 | checkstyle, uusi testi |
 | 24.4. | 8 | Ensimmäinen release, kentän lataaminen tiedostosta, overlayn piirtäminen |
-| yht   | 42   | | 
+| 2.5. | 8 | Dokumentointi ja Dokumentoinnin generoiminen, Parempi testaus, uusia kenttiä, Replay-systeemi |
+| yht   | 50   | | 
 

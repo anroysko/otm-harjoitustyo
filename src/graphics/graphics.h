@@ -1,11 +1,11 @@
 #ifndef __GRAPHICS_GRAPHICS_H_
 #define __GRAPHICS_GRAPHICS_H_
 
-#include <GL/glew.h>    // Opengl functions
-#include <GLFW/glfw3.h> // Opengl helper
+#include <GL/glew.h>     // Opengl functions
+#include <GLFW/glfw3.h>  // Opengl helper
 
-#include <memory>  // std::unique_ptr
-#include <vector>  // std::vector
+#include <memory>      // std::unique_ptr
+#include <vector>      // std::vector
 #include "keystate.h"  // KeyState
 
 /// @file=graphics.h

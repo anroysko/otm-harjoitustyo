@@ -1,8 +1,8 @@
 #ifndef __UTIL_BMP_H_
 #define __UTIL_BMP_H_
 
-#include <optional> // std::optional
-#include <vector>   // std::vector
+#include <optional>  // std::optional
+#include <vector>    // std::vector
 
 /// @file = bmp.h
 /// BMP -struct and related functions

@@ -1,16 +1,16 @@
-#include <GL/glew.h>    // Opengl functions
-#include <GLFW/glfw3.h> // Helping with opengl
-#include <assert.h>     // assert
-#include <iostream>     // std::ostream
-#include <memory>       // std::unique_ptr
-#include <optional>     // std::optional
-#include <string>       // std::string
-#include <vector>       // std::vector
+#include <GL/glew.h>     // Opengl functions
+#include <GLFW/glfw3.h>  // Helping with opengl
+#include <assert.h>      // assert
+#include <iostream>      // std::ostream
+#include <memory>	// std::unique_ptr
+#include <optional>      // std::optional
+#include <string>	// std::string
+#include <vector>	// std::vector
 
-#include "./../util/bmp.h"   // Optional, loadBMP
-#include "./../util/error.h" // makeError
-#include "shader.h"          // makeProgram
-#include "graphics.h"        
+#include "./../util/bmp.h"    // Optional, loadBMP
+#include "./../util/error.h"  // makeError
+#include "graphics.h"
+#include "shader.h"  // makeProgram
 
 /// @file=graphics.cpp
 /// Implements graphics.h

@@ -1,6 +1,6 @@
-#include <GL/glew.h>    // Opengl functions
-#include <GLFW/glfw3.h> // Opengl helper
-#include <vector>       // std::vector
+#include <GL/glew.h>     // Opengl functions
+#include <GLFW/glfw3.h>  // Opengl helper
+#include <vector>	// std::vector
 
 #include "keystate.h"
 

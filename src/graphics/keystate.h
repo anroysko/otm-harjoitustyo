@@ -1,9 +1,9 @@
 #ifndef __GRAPHICS_KEYSTATE_H_
 #define __GRAPHICS_KEYSTATE_H_
 
-#include <GL/glew.h>    // Opengl functions
-#include <GLFW/glfw3.h> // Opengl helper
-#include <vector>       // std::vector
+#include <GL/glew.h>     // Opengl functions
+#include <GLFW/glfw3.h>  // Opengl helper
+#include <vector>	// std::vector
 
 /// @file=keystate.h
 /// Keyboard I/O, struct Keystate .

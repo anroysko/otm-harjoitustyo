@@ -1,7 +1,7 @@
 #ifndef __UTIL_ERROR_H_
 #define __UTIL_ERROR_H_
 
-#include <iostream> // std::ostream
+#include <iostream>  // std::ostream
 
 /// @file = error.h
 /// Functions for printing errors, warnings and notes

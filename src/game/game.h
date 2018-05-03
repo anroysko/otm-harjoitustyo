@@ -1,10 +1,10 @@
 #ifndef __GAME_GAME_H_
 #define __GAME_GAME_H_
 
-#include <optional> // std::optional
-#include <string>   // std::string
-#include <vector>   // std::vector
-#include "./../graphics/graphics.h" // DrawData
+#include <optional>		     // std::optional
+#include <string>		     // std::string
+#include <vector>		     // std::vector
+#include "./../graphics/graphics.h"  // DrawData
 
 /// @file=game.h
 
@@ -60,7 +60,7 @@ public:
 	Level(int width, int height, int current_score, int needed_score, std::vector<int> &state);
 	/// Parses a level from the given path.
 	/// Returns std::nullopt if parsing failed
-	static std::optional<Level> parse(const std::string& level_path);
+	static std::optional<Level> parse(const std::string &level_path);
 
 	/// Make a time step.
 	/// Returns what to draw
