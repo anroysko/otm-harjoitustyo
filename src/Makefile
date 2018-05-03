@@ -93,11 +93,13 @@ fixstyle :
 
 .PHONY : doc
 doc :
+	@mkdir -p $(doc_path)
 	$(doc_program) $(doc_config) >/dev/null 2>/dev/null
 	@echo created documentation html index.html in $(doc_path)html/index.html
 
 .PHONY : fulldoc
 fulldoc :
+	@mkdir -p $(doc_path)
 	@(cat $(doc_config) ; echo "\n EXTRACT_PRIVATE = YES \n EXTRACT_PACKAGE = YES \n EXTRACT_STATIC = YES \n SOURCE_BROWSER = YES \n VERBATIM_HEADERS = YES \n FILE_PATTERNS = *.cpp *.h *.md") | $(doc_program) - >/dev/null 2>/dev/null
 	@echo created documentation html index.html in $(doc_path)html/index.html
 
