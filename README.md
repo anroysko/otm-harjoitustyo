@@ -10,6 +10,10 @@ Ohjelma on toteutettu C++:lla.
 
 [vaatimusmaarittely.md](https://github.com/anroysko/otm-harjoitustyo/blob/master/doc/vaatimusmaarittely.md)
 
+[ohje.md](https://github.com/anroysko/otm-harjoitustyo/blob/master/doc/ohje.md)
+
+[arkkitehtuurikuvaus.md](https://github.com/anroysko/otm-harjoitustyo/blob/master/doc/arkkitehtuurikuvaus.md)
+
 ## Releaset
 [Viikko 5](https://github.com/anroysko/otm-harjoitustyo/tree/0.1.0)
 
@@ -48,7 +52,7 @@ Dokumentoinnin voi generoida komennolla
 
     make doc
 
-Sitä voi tarkastella avaamalla selaimella tiedosto `src/target/doc/html/index.html
+Sitä voi tarkastella avaamalla selaimella tiedosto `src/target/doc/html/index.html`
 
 
 ### Ohjelman ajaminen
