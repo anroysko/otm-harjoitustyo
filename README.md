@@ -25,7 +25,7 @@ Makefile kompiloi ohjelman käyttämällä compileria `g++-7`. Vastaavaa voi kä
 
 Ohjelman kompilointiin tarvitaan (ainakin) kirjastoja:
 
-    libglfw3-dev libglew2.0 libgl1-mesa-dev
+    libglfw3-dev libglew-dev libgl1-mesa-dev
 
 Testikattavuusraportin generointiin tarvitsee ohjelman `lcov`
 
