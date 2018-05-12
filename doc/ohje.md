@@ -17,12 +17,14 @@ Jos käyttäjä pääsi kentän läpi, häneltä kysytään mihin replay halutaa
 Hahmoa (tai kentästä riippuen hahmoja) ohjataan nuolinäppäimillä. Jos siirron aikana pitää vasenta shift-näppäintä pohjassa, sijoittaa hahmo dynamiitin jos mahdollista. Jos siirron aikana pitää oikeaa control-näppäintä pohjassa, hahmo kerää suunnassa olevassa ruudussa olevan asian, siirtymättä itse siihen.
 ### Update-vaihe
 Jokaisella tapahtumalla, kuten kiven tippumisella ja pelaajan liikkumisella on prioriteetti. Näin saavutetaan usean objektin samanaikainen liikkuminen ilman että sallitaan pelaajan kulkea seinien läpi tai muuta vastaavaa.
+Eri tapahtumien prioriteetit (Pienin tapahtuu ensimmäisenä)
 1. Ylöspäin liikkuminen
 2. Vasemmalle ja oikealle liikkuminen ja työntäminen.
 3. Alaspäin liikkuminen ja tippuminen.
 4. Sivulle liukuminen.
 5. Sivulta kerääminen.
 6. Räjähtäminen
+Saman prioriteetin tapahtumista tapahtuu ensin sen objektin tapahtuma, joka sijaitsee ensisijaisesti niin alhaalla, ja toissijaisesti niin oikealla kuin mahdollista.
 ### Palikkatyypit
 - Hiekka. Se on staattinen kerättävä esine, jonka kerääminen ei tee mitään muuta kuin vapauttaa ruudun.
 - Seinä. Seinä on staattinen, mahdollisesti pyöristetty ja/tai huonokuntoinen. Huonokuntoiset seinät voi räjäyttää, ja pyöreiden seinien päällä olevat epästaattiset objektit voivat liukua sivuun.
