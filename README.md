@@ -21,6 +21,8 @@ Ohjelma on toteutettu C++:lla.
 
 [Lopullinen](https://github.com/anroysko/otm-harjoitustyo/tree/1.1.0)
 
+Releasen mukana oleva binääri ei välttämättä toimi. Jos näin käy, voit kompiloida sen itse alla olevien ohjeiden mukaisesti.
+
 ## Komentorivitoiminnot
 
 Makefile kompiloi ohjelman käyttämällä compileria `g++-7`. Vastaavaa voi käyttää vaihtamalla `$(CC)` -muuttujan makefilessä. Koodi käyttää kuitenkin c++17-ominaisuuksia, joten hyvin uusi compiler vaaditaan.
