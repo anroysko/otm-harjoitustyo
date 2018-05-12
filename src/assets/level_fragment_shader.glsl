@@ -11,10 +11,10 @@ void main() {
 	
 	color = texture(texture_sampler, fragment_uv).rgb;
 	if (
-		254.0 / 255.0 < color.r
-	&&	1.0   / 255.0 > color.g
-	&&	199.0 / 255.0 < color.b
-	&&	201.0 / 255.0 > color.b) {
+		250.0 / 255.0 < color.r
+	&&	5.0   / 255.0 > color.g
+	&&	195.0 / 255.0 < color.b
+	&&	205.0 / 255.0 > color.b) {
 		discard;
 	}
 	

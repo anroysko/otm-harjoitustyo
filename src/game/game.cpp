@@ -1,37 +1,31 @@
-#include <vector> // std::vector
-#include <string> // std::string
-#include <optional> // std::optional
-#include <queue> // std::priority_queue
-#include <utility> // std::pair
-#include <memory> // std::move
-#include <fstream> // std::ifstream
-#include <sstream> // std::stringstream
-#include <iostream> // TODO: remove
-#include "./../graphics/graphics.h" // DrawData, Sprite, makeSprite()
-#include "./../util/constants.h" // Constants
 #include "game.h"
+#include <fstream>		     // std::ifstream
+#include <iostream>		     // TODO: remove
+#include <memory>		     // std::move
+#include <optional>		     // std::optional
+#include <queue>		     // std::priority_queue
+#include <sstream>		     // std::stringstream
+#include <string>		     // std::string
+#include <utility>		     // std::pair
+#include <vector>		     // std::vector
+#include "./../graphics/graphics.h"  // DrawData, Sprite, makeSprite()
+#include "./../util/constants.h"     // Constants
+
+/// @file game.cpp
 
 // Block and blocktype
-BlockType::BlockType() {
-	can_fall = false;
-	collectible = false;
-	round = false;
-	destroyable = true;
-	can_be_crushed = true;
-	base_texture = TEXTURE_NOT_SET;
-}	
-
-BlockType::BlockType(bool can_fall, bool collectible, bool round, bool destroyable, bool can_be_crushed, int base_texture) {
+BlockType::BlockType(bool can_fall, bool collectible, bool round, bool destroyable, int hardness, int crush_strength, int base_texture) {
 	this->can_fall = can_fall;
 	this->collectible = collectible;
 	this->round = round;
 	this->destroyable = destroyable;
-	this->can_be_crushed = can_be_crushed;
+	this->hardness = hardness;
+	this->crush_strength = crush_strength;
 	this->base_texture = base_texture;
 }
 
-BlockType makeBlockType(bool can_fall, bool collectible, bool round, bool destroyable, bool can_be_crushed, int base_texture) {
-	BlockType type (can_fall, collectible, round, destroyable, can_be_crushed, base_texture);
+BlockType makeBlockType(bool can_fall, bool collectible, bool round, bool destroyable, int hardness, int crush_strength, int base_texture) {
+	BlockType type(can_fall, collectible, round, destroyable, hardness, crush_strength, base_texture);
 	return type;
 }
 
@@ -65,30 +59,30 @@ const int BLOCK_CLOSED_GOAL = 13;
 const int BLOCK_OPEN_GOAL = 14;
 const int BLOCK_PLAYER = 15;
 */
-// BlockType makeBlockType(bool can_fall, bool collectible, bool round, bool destroyable, bool can_be_crushed, int base_texture) {
+// BlockType makeBlockType(bool can_fall, bool collectible, bool round, bool destroyable, int hardness, int crush_strength, int base_texture) {
 /// Vector containing the info on the block types.
 std::vector<BlockType> block_types = {
-	makeBlockType(false, true, false, true, true, TEXTURE_NOT_SET),
-	makeBlockType(false, true, false, true, false, TEXTURE_SAND),
-	makeBlockType(false, false, false, false, false, TEXTURE_WALL),
-	makeBlockType(false, false, false, true, false, TEXTURE_CRACKED_WALL),
-	makeBlockType(false, false, true, false, false, TEXTURE_ROUND_WALL),
-	makeBlockType(false, false, true, true, false, TEXTURE_CRACKED_ROUND_WALL),
-	makeBlockType(true, false, true, true, false, TEXTURE_ROCK),
-	makeBlockType(true, true, true, true, true, TEXTURE_EMERALD),
-	makeBlockType(true, false, true, true, false, TEXTURE_BOMB),
-	makeBlockType(true, false, true, true, false, TEXTURE_BAG),
-	makeBlockType(false, true, false, true, false, TEXTURE_DYNAMITE_0),
-	makeBlockType(false, false, false, true, false, TEXTURE_DYNAMITE_0),
-	makeBlockType(false, false, false, true, false, TEXTURE_EXPLOSION),
-	makeBlockType(false, false, true, true, false, TEXTURE_CLOSED_GOAL),
-	makeBlockType(false, true, true, true, false, TEXTURE_OPEN_GOAL),
-	makeBlockType(false, false, false, true, true, TEXTURE_PLAYER)
-};
+	makeBlockType(false, true, false, true, 0, 0, TEXTURE_NOT_SET),
+	makeBlockType(false, true, false, true, 3, 0, TEXTURE_SAND),
+	makeBlockType(false, false, false, false, 3, 0, TEXTURE_WALL),
+	makeBlockType(false, false, false, true, 3, 0, TEXTURE_CRACKED_WALL),
+	makeBlockType(false, false, true, false, 3, 0, TEXTURE_ROUND_WALL),
+	makeBlockType(false, false, true, true, 3, 0, TEXTURE_CRACKED_ROUND_WALL),
+	makeBlockType(true, false, true, true, 3, 2, TEXTURE_ROCK),
+	makeBlockType(true, true, true, true, 2, 1, TEXTURE_EMERALD),
+	makeBlockType(true, false, true, true, 3, 0, TEXTURE_BOMB),
+	makeBlockType(true, false, true, true, 3, 1, TEXTURE_BAG),
+	makeBlockType(false, true, false, true, 3, 0, TEXTURE_DYNAMITE_0),
+	makeBlockType(false, false, false, true, 3, 0, TEXTURE_DYNAMITE_0),
+	makeBlockType(false, false, false, true, 3, 0, TEXTURE_EXPLOSION),
+	makeBlockType(false, false, true, true, 3, 0, TEXTURE_CLOSED_GOAL),
+	makeBlockType(false, true, true, true, 3, 0, TEXTURE_OPEN_GOAL),
+	makeBlockType(false, false, false, true, 1, 0, TEXTURE_PLAYER)};
 
 // Level's functions
 Level::Level() {
 	name = "UNNAMED LEVEL";
+	difficulty = "TRIVIAL";
 	width = 0;
 	height = 0;
 	needed_score = 0;
@@ -102,13 +96,14 @@ Level::Level() {
 std::optional<Level> Level::load(const std::string& level_path) {
 	std::ifstream fin;
 	fin.open(level_path);
-	if (! fin.is_open()) return std::nullopt;
+	if (!fin.is_open()) return std::nullopt;
 	std::string file_type;
 	std::getline(fin, file_type);
 	if (file_type != "LEVEL") return std::nullopt;
-	
+
 	Level level;
 	std::getline(fin, level.name);
+	std::getline(fin, level.difficulty);
 
 	fin >> level.width >> level.height >> level.needed_score >> level.time_limit;
 	if (!fin) return std::nullopt;
@@ -118,19 +113,18 @@ std::optional<Level> Level::load(const std::string& level_path) {
 		for (int x = 0; x < level.width; ++x) {
 			int type;
 			fin >> type;
-			Block block (type);
+			Block block(type);
 			level.blocks[x + y * level.width] = block;
 		}
 	}
-	
+
 	if (!fin) return std::nullopt;
 	return std::optional<Level>{level};
 }
 
-
 // Functions for updating the state of the level.
 void Level::clearBlock(int place) {
-	Block empty_block (BLOCK_NONE);
+	Block empty_block(BLOCK_NONE);
 	blocks[place] = empty_block;
 }
 
@@ -149,10 +143,21 @@ bool Level::canSlide(int place, bool dir) {
 	int dx = (dir == DIR_LEFT ? -1 : 1);
 	return (block_types[blocks[place + width].type].round) && (blocks[place + dx].type == BLOCK_NONE) && (blocks[place + dx + width].type == BLOCK_NONE);
 }
+bool Level::canPush(int place, bool dir) {
+	if (!block_types[blocks[place].type].can_fall) return false;
+	if (blocks[place].falling) return false;
+	if (block_types[blocks[place].type].collectible) return false;
+	int dx = (dir == DIR_LEFT ? -1 : 1);
+	if (blocks[place + dx].type != BLOCK_NONE) return false;
+	if (blocks[place - dx].type != BLOCK_PLAYER) return false;
+	if (blocks[place - dx].moved) return false;
+	if (blocks[place - dx].move_dir != (dir == DIR_LEFT ? MOVE_LEFT : MOVE_RIGHT)) return false;
+	if (blocks[place - dx].grab) return false;
+	return true;
+}
 
 bool Level::canCollect(int place) {
-	// std::cout << place << ' ' << width << ' ' << height << '\n';
-	return (blocks[place].type == BLOCK_NONE || ((block_types[blocks[place].type].collectible == true) && (blocks[place].falling == false)));
+	return (block_types[blocks[place].type].collectible == true) && (blocks[place].falling == false);
 }
 
 void Level::collect(int place, int player_place, DrawData* data) {
@@ -194,16 +199,12 @@ void Level::goTo(int place, int target, DrawData* data) {
 			clearBlock(place);
 		}
 	} else {
-		if (block_types[blocks[target].type].can_be_crushed == false) {
-			drawBlock(place, 0, 0, data);
-		} else {
-			if (blocks[target].type == BLOCK_PLAYER) {
-				player_destroyed = true;
-			}
-			drawBlock(place, dx, dy, data);
-			blocks[target] = blocks[place];
-			clearBlock(place);
+		if (blocks[target].type == BLOCK_PLAYER) {
+			player_destroyed = true;
 		}
+		drawBlock(place, dx, dy, data);
+		blocks[target] = blocks[place];
+		clearBlock(place);
 	}
 }
 
@@ -229,14 +230,8 @@ std::pair<int, int> Level::movePriority(int place, int step) {
 		if (blocks[place].grab) {
 			// Grab-move.
 			if (step <= 6) {
-				if (dyn_bit) {
-					if (blocks[ti].type == BLOCK_NONE) {
-						return {6, dir | MOVE_GRAB_BIT | dyn_bit};
-					}
-				} else {
-					if (canCollect(ti) && (blocks[ti].type != BLOCK_OPEN_GOAL)) {
-						return {6, dir | MOVE_GRAB_BIT | dyn_bit};
-					}
+				if (canCollect(ti) && (blocks[ti].type != BLOCK_OPEN_GOAL)) {
+					return {6, dir | MOVE_GRAB_BIT};
 				}
 			}
 		} else {
@@ -253,25 +248,19 @@ std::pair<int, int> Level::movePriority(int place, int step) {
 		}
 	} else if (block_types[blocks[place].type].can_fall == true) {
 		// 2. Being pushed
-		if(!blocks[place].falling) {
-			for (int dx = -1; dx <= 1; dx += 2) {
-				int push_dir = (dx == 1 ? MOVE_RIGHT : MOVE_LEFT);
-				if (blocks[place+dx].type == BLOCK_NONE) {
-					if ((blocks[place-dx].type == BLOCK_PLAYER) && (blocks[place-dx].move_dir == push_dir) && (blocks[place-dx].grab == false)) {
-						return {2, push_dir};
-					}
-				}
-			}
+		if (step <= 2) {
+			if (canPush(place, DIR_LEFT)) return {2, MOVE_LEFT};
+			if (canPush(place, DIR_RIGHT)) return {2, MOVE_RIGHT};
 		}
 		// 3. Falling
-		if (blocks[place+width].type == BLOCK_NONE || blocks[place].falling) {
+		if (blocks[place + width].type == BLOCK_NONE || blocks[place].falling) {
 			if (step <= 3) {
-				return {3, MOVE_DOWN};
+				return {3, MOVE_DOWN | MOVE_FALL_BIT};
 			}
 		}
 		// 4. Sliding in favored direction
 		// 5. Sliding in unfavored direction
-		if (! blocks[place].falling) {
+		if (!blocks[place].falling) {
 			bool can_left = canSlide(place, DIR_LEFT);
 			bool can_right = canSlide(place, DIR_RIGHT);
 			if (blocks[place + width].slide_dir == DIR_LEFT) {
@@ -292,13 +281,11 @@ std::pair<int, int> Level::movePriority(int place, int step) {
 	return {-1, -1};
 }
 
-
-
 /// Assumes the move is legal.
 void Level::makeMove(int place, int move, DrawData* data) {
 	int dir = move & 7;
 
-	int ti; // Target index
+	int ti;  // Target index
 	if (dir == MOVE_LEFT) ti = place - 1;
 	if (dir == MOVE_UP) ti = place - width;
 	if (dir == MOVE_RIGHT) ti = place + 1;
@@ -317,41 +304,39 @@ void Level::makeMove(int place, int move, DrawData* data) {
 			data->cam_dx = 0;
 			data->cam_dy = 0;
 		}
-		if (move & MOVE_PLACE_DYNAMITE_BIT) {
-			blocks[ti].type = BLOCK_ACTIVE_DYNAMITE;
-			blocks[ti].counter = -1;
-		} else {
-			collect(ti, place, data);
-		}
+		collect(ti, place, data);
 		blocks[place].moved = true;
 		drawBlock(place, 0, 0, data);
 	} else {
 		// Handle special cases with crushing
-		if (dir == MOVE_DOWN) {
+		if (move & MOVE_FALL_BIT) {
+			blocks[place].falling = true;
+			// Special falling effects
 			if (blocks[place].type == BLOCK_BOMB) {
 				// Bomb stops falling
-				if (blocks[ti].type != BLOCK_NONE) {
-					drawBlock(place, 0, 0, data);
+				if (blocks[place + width].type != BLOCK_NONE) {
 					clearBlock(place);
 					explosion_que.push_back({place, 3});
 					return;
 				}
 			} else if (blocks[place].type == BLOCK_ROCK && blocks[ti].type == BLOCK_BAG) {
 				// Bag gets opened
-				drawBlock(ti, 0, 0, data);
 				blocks[ti].type = BLOCK_EMERALD;
-				
-				drawBlock(place, 0, 0, data);
+				drawBlock(ti, 0, 0, data);
+
 				blocks[place].moved = true;
 				blocks[place].falling = false;
 				return;
 			} else if (blocks[ti].type == BLOCK_BOMB) {
 				// Something falls on a bomb
-				drawBlock(ti, 0, 0, data);
 				clearBlock(ti);
 				explosion_que.push_back({ti, 3});
-				
-				drawBlock(place, 0, 0, data);
+
+				blocks[place].moved = true;
+				blocks[place].falling = false;
+				return;
+			}
+			if (block_types[blocks[ti].type].hardness > block_types[blocks[place].type].crush_strength) {
 				blocks[place].moved = true;
 				blocks[place].falling = false;
 				return;
@@ -366,20 +351,20 @@ void Level::makeMove(int place, int move, DrawData* data) {
 		goTo(place, ti, data);
 		if (move & MOVE_PLACE_DYNAMITE_BIT) {
 			blocks[place].type = BLOCK_ACTIVE_DYNAMITE;
-			blocks[place].counter = -1; // Dynamite timers start at -1 so that they'll be 0 at the first update.
+			blocks[place].counter = -1;  // Dynamite timers start at -1 so that they'll be 0 at the first update.
 		}
 	}
 }
 
-DrawData Level::update(int move) {
+DrawData Level::update(int move, int default_cam_x, int default_cam_y) {
 	// Initialize draw data.
 	DrawData data;
 	data.width = width;
 	data.height = height;
 	data.cam_x = -1;
 	data.cam_y = -1;
-	data.cam_dx = -1;
-	data.cam_dy = -1;
+	data.cam_dx = 0;
+	data.cam_dy = 0;
 
 	// Step 0: Initialization.
 	for (int i = 0; i < width * height; ++i) {
@@ -415,12 +400,13 @@ DrawData Level::update(int move) {
 		if (pr != -1) que.push({-pr, i});
 	}
 	// Handle the events
-	while(! que.empty()) {
+	while (!que.empty()) {
 		int i = que.top().second;
 		que.pop();
 
 		std::pair<int, int> mp = movePriority(i, step);
 		if (mp.first != -1) {
+			step = mp.first;
 			makeMove(i, mp.second, &data);
 			// Update adjancent objects.
 			for (int dx = -1; dx <= 1; ++dx) {
@@ -451,7 +437,7 @@ DrawData Level::update(int move) {
 		if (blocks[i].type == BLOCK_ACTIVE_DYNAMITE) {
 			++blocks[i].counter;
 			if (blocks[i].counter == RULES_DYNAMITE_TIMER) {
-				// Notably, do not draw the block.	
+				// Notably, do not draw the block.
 				// There is no texture for a bomb at 8'th tick.
 				clearBlock(i);
 				explosion_que.push_back({i, 3});
@@ -503,22 +489,36 @@ DrawData Level::update(int move) {
 	for (int i = 0; i < width * height; ++i) {
 		// Draw still blocks
 		if (blocks[i].type != BLOCK_NONE) drawBlock(i, 0, 0, &data);
+		if ((blocks[i].type == BLOCK_PLAYER) && (!blocks[i].moved)) {
+			int x = i % width;
+			int y = i / width;
+			if (data.cam_y < y || (data.cam_y == y && data.cam_x < x)) {
+				data.cam_x = x;
+				data.cam_y = y;
+			}
+		}
+	}
+	if (data.cam_x == -1 && data.cam_y == -1) {
+		data.cam_x = default_cam_x;
+		data.cam_y = default_cam_y;
 	}
 	return data;
 }
 
 std::string Level::getOverlayString() {
 	std::stringstream ss;
-	ss << name << "          " << "EMERALDS: " << current_score << "/" << needed_score << "          " << "TIME: " << current_time << "/" << time_limit;
+	ss << name << "          "
+	   << "EMERALDS: " << current_score << "/" << needed_score << "          "
+	   << "TIME: " << current_time << "/" << time_limit << "          " << difficulty;
 	return ss.str();
 }
 
 int Level::getState() {
-	if (player_destroyed) return 2; // LOSS
+	if (player_destroyed) return 2;  // LOSS
 	for (int i = 0; i < width * height; ++i) {
-		if (blocks[i].type == BLOCK_PLAYER) return 0; // ONGOING
+		if (blocks[i].type == BLOCK_PLAYER) return 0;  // ONGOING
 	}
-	return 1; // WIN
+	return 1;  // WIN
 }
 
 void Level::printState() {

@@ -28,6 +28,8 @@ struct Sprite {
 	Sprite(int x, int y, int dx, int dy, int tex);
 };
 
+Sprite makeSprite(int x, int y, int dx, int dy, int tex);
+
 /// Struct representing everything that needs to be drawn.
 struct DrawData {
 	/// How wide the area to draw is.
@@ -50,7 +52,7 @@ struct DrawData {
 /// Creates sprites from the given text.
 /// All sprites have the given y-coordinate.
 /// First sprite has the given x-coordinate, and subjequent ones have it increased by one each time.
-std::vector<Sprite> textToSprites(std::string text, int first_x, int first_y);
+std::vector<Sprite> textToSprites(std::string text, int first_y);
 
 /// Object containing all openGl objects.
 /// Singleton, so you can only have one at once. Use the factory function.
@@ -105,7 +107,7 @@ private:
 	GLuint overlay_texture_sampler_id;
 
 	/// How many tiles wide atlas is.
-	const int ATLAS_GRID_WIDTH = 4;
+	const int ATLAS_GRID_WIDTH = 8;
 	/// How many tiles tall atlas is.
 	const int ATLAS_GRID_HEIGHT = 4;
 	/// How wide a single tile in atlas is.

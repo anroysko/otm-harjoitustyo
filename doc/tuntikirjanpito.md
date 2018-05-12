@@ -11,5 +11,6 @@
 | 17.4. | 4 | checkstyle, uusi testi |
 | 24.4. | 8 | Ensimmäinen release, kentän lataaminen tiedostosta, overlayn piirtäminen |
 | 2.5. | 8 | Dokumentointi ja Dokumentoinnin generoiminen, Parempi testaus, uusia kenttiä, Replay-systeemi |
-| yht   | 50   | | 
+| 2.11. | 12 | Pelilogiikan kokonaan uudelleen tekeminen, kokonaan uudet kentät. |
+| yht   | 64   | | 
 

@@ -1,0 +1,9 @@
+body {
+	width: 980px;
+	margin-right: auto;
+	margin-left: auto;
+}
+#MSearchBox {
+	position: relative;
+	float: right;
+}

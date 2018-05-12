@@ -1,5 +1,5 @@
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <optional>
 #include <utility>
 #include "./game/game.h"
@@ -41,20 +41,21 @@ int main() {
 		for (int i = 0; i < move_count; ++i) fin >> moves[i];
 	}
 	fin.close();
-	
-	std::optional<Level> tmp = Level::parse(level_path);
+
+	std::optional<Level> tmp = Level::load(level_path);
 	if (!tmp) {
 		std::cout << "Failed to parse level\n";
 		return 1;
 	}
 	Level& level = *tmp;
-	DrawData data = level.update(MOVE_NONE);
+	DrawData data = level.update(MOVE_NONE, 0, 0);
 
 	// int x, y, dx, dy, tex;
 	DrawData text_draw_data;
-	text_draw_data.sprites = textToSprites(level.getOverlayString(), -30, -22);
+	text_draw_data.sprites = textToSprites(level.getOverlayString(), -(data.height * 2 + 2));
 
 	std::unique_ptr<GraphicsState> state = GraphicsState::create();
+
 	if (state == nullptr) {
 		std::cout << "Failed to create graphics state\n";
 		return 1;
@@ -62,43 +63,50 @@ int main() {
 
 	int ticks = 0;
 	int ticks_per_move = 16;
+	int ticks_to_quit = ticks_per_move * 5;
 	int mi = 0;
 	bool time_limit_elapsed = false;
 	state->setLevelDraw(data);
+	// state->setLevelDraw(empty_data);
 	state->setOverlayDraw(text_draw_data);
 	while (true) {
 		state->draw(ticks, ticks_per_move, data, text_draw_data);
+		// state->draw(ticks, ticks_per_move, empty_data, text_draw_data);
 		++ticks;
 		if (ticks == ticks_per_move) {
-			if (! is_replay) {
+			if (!is_replay) {
 				moves.push_back(state->getMove());
 			} else {
 				if (mi == moves.size()) break;
 			}
 			int move = moves[mi];
 			++mi;
-			data = level.update(move);
-			text_draw_data.sprites = textToSprites(level.getOverlayString(), -30, -22);
+			data = level.update(move, data.cam_x + data.cam_dx, data.cam_y + data.cam_dy);
+			text_draw_data.sprites = textToSprites(level.getOverlayString(), -(data.height * 2 + 2));
 			state->setLevelDraw(data);
 			state->setOverlayDraw(text_draw_data);
-			++level.current_time;
 			ticks = 0;
-			if (level.current_time >= level.time_limit) time_limit_elapsed = true;
 		}
-		if (state->shouldQuit() || level.playerWon() || time_limit_elapsed) break;
+		if (level.getState()) {
+			--ticks_to_quit;
+			if (ticks_to_quit == 0) break;
+		}
+		if (state->shouldQuit()) break;
 	}
-	state.release(); // Close the window
-	if (level.playerWon()) {
+	state.release();  // Close the window
+	if (level.getState() == 1) {
 		std::cout << "You won!\n";
-	} else if (time_limit_elapsed) {
-		std::cout << "You ran out of time!\n";
+	} else if (level.getState() == 2) {
+		std::cout << "You lost :(\n";
 	} else {
 		std::cout << "You closed the window!\n";
 	}
+	/*
 	std::cout << "Time used: " << level.current_time << "/" << level.time_limit << "\n";
 	std::cout << "Emeralds mined: " << level.current_score << "/" << level.needed_score << "\n";
+	*/
 
-	if (!is_replay && level.playerWon()) {
+	if (!is_replay && (level.getState() == 1)) {
 		std::cout << "Choose where to save replay\n";
 		std::optional<std::string> replay_file = promptFile();
 		if (replay_file) {

@@ -18,25 +18,21 @@ std::pair<int, int> testGame(const std::vector<std::string>& levels, const std::
 	int total = levels.size();
 	int curr = 0;
 	for (int i = 0; i < total; ++i) {
-		std::optional<Level> tmp = Level::parse(levels[i]);
+		std::optional<Level> tmp = Level::load(levels[i]);
 		if (!tmp) {
 			std::cout << indent(2) << "Testing " << levels[i] << " Failed, parsing level could not be done.\n";
 			continue;
 		}
 		bool success = true;
 		Level& lvl = *tmp;
-		lvl.update(MOVE_NONE);
-		for (int mv : moves[i]) {
-			if (lvl.playerWon()) {
-				success = false;  // Won too soon
-				break;
-			}
-			lvl.update(mv);
+		lvl.update(MOVE_NONE, 0, 0);
+		for (int mv : moves[i]) lvl.update(mv, 0, 0);
+		if (lvl.getState() != 1) {
+			success = false;
 		}
-		if (!lvl.playerWon()) success = false;
 		curr += success;
 		if (success == false) {
-			std::cout << indent(2) << "Testing " << levels[i] << " Failed, moves didn't lead to victory or led to victory too soon.\n";
+			std::cout << indent(2) << "Testing " << levels[i] << " Failed, moves didn't lead to victory\n";
 		}
 	}
 	return {curr, total};
@@ -51,12 +47,12 @@ int main() {
 	int total = 0;
 
 	std::cout << "Testing game\n";
-	std::vector<std::string> level_names = {"assets/levels/trick.txt", "assets/levels/emerald_quarry.txt", "assets/levels/collapsed_mine.txt", "assets/levels/emerald_vein.txt"};
+	std::vector<std::string> level_names = {"assets/levels/easy/dangerous_bridge.txt", "assets/levels/hard/dangerous_bridge_2.txt", "assets/levels/medium/double_trouble.txt", "assets/levels/tutorial/tutorial_1.txt"};
 	std::vector<std::vector<int>> moves = {
-		{0, 0, 0, 4, 4, 1, 4, 0, 0, 0, 3, 2, 3, 3, 4, 4, 4, 0, 1, 1, 3, 2, 4, 1, 1, 3, 2, 2, 4, 1, 1, 1, 3, 2, 2, 2, 1, 1, 1, 3, 3, 2, 2, 1, 1, 4, 4, 2, 2, 3},
-		{0, 0, 1, 4, 1, 1, 3, 2, 3, 2, 0, 2, 0, 2, 4, 2, 0, 1, 1, 1, 1, 1, 3, 2, 3, 2, 2, 2, 2, 2, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 4, 1, 2, 2, 2, 3, 3, 1, 1, 1, 1, 0, 0, 0, 2, 0, 2, 0, 2, 4, 2, 1, 1, 3, 3, 2, 2, 2, 0, 0, 0, 1, 0, 1, 0, 4, 1, 2, 3, 3, 1, 1, 1, 0, 0, 2, 0, 0, 0, 3},
-		{0, 2, 2, 2, 2, 2, 4, 1, 4, 2, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 2, 4, 1, 4, 1, 4, 1, 4, 1, 1, 3, 2, 3, 2, 3, 2, 3, 2, 3, 1, 1, 1, 4, 3, 1, 3, 2, 0, 0, 0, 0, 1, 4, 4, 2, 2, 2, 2, 4, 2, 4, 4, 4},
-		{0, 0, 0, 1, 3, 4, 2, 1, 1, 1, 3, 4, 2, 4, 4, 2, 2, 2, 3, 4, 1, 1, 3, 2, 0, 0, 1, 4, 2, 2, 2, 3, 1, 3, 1, 0, 0, 1, 1, 1, 1, 0, 2, 3, 2, 2, 3, 4, 4, 2, 3, 3, 3, 4, 4, 1, 1, 3, 3, 1, 4, 3, 1, 0, 0, 0, 0, 0, 2, 0, 0, 3, 3, 1, 3, 1, 2, 0, 0, 0, 0, 2, 0, 0, 0, 1, 3, 2, 2, 2, 0, 0, 4, 1, 1, 4, 4, 2, 1, 3, 3, 2, 2, 4, 4, 0, 3, 3, 3, 3}};
+		{0, 0, 3, 3, 3, 3, 1, 0, 2, 0, 0, 0, 66, 2, 1, 1, 4, 3, 3, 2, 0, 0, 0, 0, 4, 4, 4, 3, 3, 1, 1, 2, 2, 2, 2, 2, 0, 0, 0},
+		{0, 3, 3, 3, 3, 1, 0, 0, 0, 0, 34, 66, 0, 2, 0, 0, 0, 0, 0, 2, 1, 4, 3, 0, 4, 4, 3, 3, 1, 1, 2, 2, 2, 2, 2, 0, 0, 0},
+		{0, 1, 0, 0, 2, 3, 3, 4, 2, 2, 1, 3, 35, 4, 0, 3, 3, 1, 4, 3, 1, 1, 4, 2, 0, 0, 0, 0},
+		{0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 4, 4, 1, 0, 3, 2, 2, 2, 3, 1, 4, 4, 4, 1, 0, 67, 2, 2, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 1, 4, 4, 3, 3, 1, 0, 3, 1, 1, 2, 2, 3, 3, 4, 3, 3, 4, 2, 1, 3, 3, 3, 4, 3, 3, 3, 1, 2, 3, 2, 2, 1, 1, 0, 33, 0, 3, 3, 2, 1, 2, 1, 3, 4, 3, 3, 0, 1, 0, 0, 67, 68, 3, 4, 4, 4, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 3, 3, 3, 2, 2, 3, 3, 0, 0, 0}};
 	tmp = testGame(level_names, moves);
 	std::cout << indent(1) << tmp.first << "/" << tmp.second << " of tests correct\n";
 	correct += tmp.first;

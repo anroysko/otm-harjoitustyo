@@ -1,0 +1,4 @@
+REPLAY
+./assets/levels/hard/dangerous_bridge_2.txt
+38
+0 3 3 3 3 1 0 0 0 0 34 66 0 2 0 0 0 0 0 2 1 4 3 0 4 4 3 3 1 1 2 2 2 2 2 0 0 0 

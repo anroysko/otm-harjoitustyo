@@ -19,6 +19,8 @@ Ohjelma on toteutettu C++:lla.
 
 [Viikko 6](https://github.com/anroysko/otm-harjoitustyo/tree/0.2.0)
 
+[Lopullinen](https://github.com/anroysko/otm-harjoitustyo/tree/1.1.0)
+
 ## Komentorivitoiminnot
 
 Makefile kompiloi ohjelman käyttämällä compileria `g++-7`. Vastaavaa voi käyttää vaihtamalla `$(CC)` -muuttujan makefilessä. Koodi käyttää kuitenkin c++17-ominaisuuksia, joten hyvin uusi compiler vaaditaan.

@@ -23,10 +23,16 @@ Sprite::Sprite(int x, int y, int dx, int dy, int tex) {
 	this->tex = tex;
 }
 
+Sprite makeSprite(int x, int y, int dx, int dy, int tex) {
+	Sprite res(x, y, dx, dy, tex);
+	return res;
+}
+
 // Creates sprites from text
-std::vector<Sprite> textToSprites(std::string text, int first_x, int first_y) {
+std::vector<Sprite> textToSprites(std::string text, int first_y) {
 	std::vector<Sprite> res;
 	int dx = 1;
+	int first_x = -dx * (1 + text.size()) / 2;
 	for (int i = 0; i < text.size(); ++i) {
 		char c = text[i];
 		int ind = 0;
@@ -386,9 +392,20 @@ void GraphicsState::drawLevel(double dt, double time_per_step, DrawData& level_d
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
 	// TODO: calculate player coordinates here
-	glUniform1f(level_move_scale_id, dt / time_per_step);								  // How much of a step has elapsed
-	glUniform2f(level_map_scale_id, 2.0 * atlas_tile_width / screen_width, 2.0 * atlas_tile_height / screen_height);  // How wide and tall blocks should be (here, 64)
-	glUniform2f(level_player_pos_id, 4.0, 5.0);									  // Player coordinates
+	double tiles_per_width = (double)screen_width / (atlas_tile_width);
+	double tiles_per_height = (double)screen_height / (atlas_tile_height);
+	double camera_x = (double)(level_data.width) / 2;
+	double camera_y = (double)(level_data.height) / 2;
+	/*
+	double camera_x = 0.5 + level_data.cam_x + level_data.cam_dx * dt / time_per_step;
+	double camera_y = 0.5 + level_data.height - level_data.cam_y - level_data.cam_dy * dt / time_per_step;
+	double left_tiles = camera_x / tiles_per_width;
+	double right_tiles = (level_data.width + 1 - camera_x) / tiles_per_width;
+	double up_tiles = camera_y / tiles_per_width
+	*/
+	glUniform1f(level_move_scale_id, dt / time_per_step);				 // How much of a step has elapsed
+	glUniform2f(level_map_scale_id, 2.0 / tiles_per_width, 2.0 / tiles_per_height);  // How wide and tall blocks should be (here, 64)
+	glUniform2f(level_player_pos_id, camera_x, camera_y);				 // Player coordinates
 
 	glDrawArrays(GL_TRIANGLES, 0, level_data.sprites.size() * 6);
 
@@ -432,7 +449,7 @@ void GraphicsState::draw(double dt, double time_per_step, DrawData& level_data, 
 	key_state.updateKeyState(window);
 
 	// Clear previous
-	glClearColor(0.1, 0.1, 0.1, 0.0f);
+	glClearColor(0.0, 0.0, 0.0, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	// Draw level

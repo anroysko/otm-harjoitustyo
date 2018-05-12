@@ -21,7 +21,7 @@ cov_objects := $(addprefix $(cov_path), $(sources:.cpp=.o))
 cov_depends := $(addprefix $(cov_path), $(sources:.cpp=.d))
 cov_exclude_files := graphics/* util/*
 
-stylecheck_files := $(sources) game/game.h graphics/graphics.h graphics/shader.h graphics/keystate.h util/bmp.h util/file_io.h util/error.h
+stylecheck_files := $(sources) game/game.h graphics/graphics.h graphics/shader.h graphics/keystate.h util/bmp.h util/file_io.h util/error.h util/constants.h
 doc_config := $(doc_program).ini
 
 # 
@@ -73,9 +73,6 @@ run : $(bin_path)$(main)
 .PHONY : coverage
 coverage : $(cov_path)html/index.html
 
-.PHONY : showcoverage
-showcoverage : coverage
-	xdg-open $(cov_path)html/index.html 2>/dev/null
 
 .PHONY : checkstyle
 checkstyle :
@@ -102,6 +99,14 @@ fulldoc :
 	@mkdir -p $(doc_path)
 	@(cat $(doc_config) ; echo "\n EXTRACT_PRIVATE = YES \n EXTRACT_PACKAGE = YES \n EXTRACT_STATIC = YES \n SOURCE_BROWSER = YES \n VERBATIM_HEADERS = YES \n FILE_PATTERNS = *.cpp *.h *.md") | $(doc_program) - >/dev/null 2>/dev/null
 	@echo created documentation html index.html in $(doc_path)html/index.html
+
+.PHONY : showcoverage
+showcoverage : coverage
+	@xdg-open $(cov_path)html/index.html 2>/dev/null
+
+.PHONY : showdoc
+showdoc : doc
+	@xdg-open $(doc_path)html/index.html 2>/dev/null
 
 .PHONY : clean
 clean :
