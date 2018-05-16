@@ -312,6 +312,14 @@ void Level::makeMove(int place, int move, DrawData* data) {
 		if (move & MOVE_FALL_BIT) {
 			blocks[place].falling = true;
 			// Special falling effects
+			if (blocks[ti].type == BLOCK_BOMB) {
+				// Something falls on a bomb
+				clearBlock(ti);
+				explosion_que.push_back({ti, 3});
+
+				blocks[place].moved = true;
+				blocks[place].falling = false;
+			}
 			if (blocks[place].type == BLOCK_BOMB) {
 				// Bomb stops falling
 				if (blocks[place + width].type != BLOCK_NONE) {
@@ -319,28 +327,19 @@ void Level::makeMove(int place, int move, DrawData* data) {
 					explosion_que.push_back({place, 3});
 					return;
 				}
-			} else if (blocks[place].type == BLOCK_ROCK && blocks[ti].type == BLOCK_BAG) {
+			}
+			if (blocks[place].type == BLOCK_ROCK && blocks[ti].type == BLOCK_BAG) {
 				// Bag gets opened
 				blocks[ti].type = BLOCK_EMERALD;
-				drawBlock(ti, 0, 0, data);
 
 				blocks[place].moved = true;
 				blocks[place].falling = false;
-				return;
-			} else if (blocks[ti].type == BLOCK_BOMB) {
-				// Something falls on a bomb
-				clearBlock(ti);
-				explosion_que.push_back({ti, 3});
-
-				blocks[place].moved = true;
-				blocks[place].falling = false;
-				return;
 			}
 			if (block_types[blocks[ti].type].hardness > block_types[blocks[place].type].crush_strength) {
 				blocks[place].moved = true;
 				blocks[place].falling = false;
-				return;
 			}
+			if (blocks[place].moved == true) return;
 		} else if (move & MOVE_SLIDE_BIT) {
 			// Flip the direction objects slide to from the top of this object.
 			if ((blocks[place + width].slide_dir == DIR_LEFT) == (dir == MOVE_LEFT)) {
@@ -351,7 +350,7 @@ void Level::makeMove(int place, int move, DrawData* data) {
 		goTo(place, ti, data);
 		if (move & MOVE_PLACE_DYNAMITE_BIT) {
 			blocks[place].type = BLOCK_ACTIVE_DYNAMITE;
-			blocks[place].counter = -1;  // Dynamite timers start at -1 so that they'll be 0 at the first update.
+			blocks[place].counter = 0;  // Dynamite timers start at -1 so that they'll be 0 at the first update.
 		}
 	}
 }
