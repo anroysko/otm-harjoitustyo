@@ -13,5 +13,5 @@
 | 2.5. | 8 | Dokumentointi ja Dokumentoinnin generoiminen, Parempi testaus, uusia kenttiä, Replay-systeemi |
 | 2.11. | 12 | Pelilogiikan kokonaan uudelleen tekeminen, kokonaan uudet kentät. |
 | 16.11. | 3 | Uusi kenttä, bugifiksausta. |
-| yht   | 64   | | 
+| yht   | 67   | | 
 
