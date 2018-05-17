@@ -12,5 +12,6 @@
 | 24.4. | 8 | Ensimmäinen release, kentän lataaminen tiedostosta, overlayn piirtäminen |
 | 2.5. | 8 | Dokumentointi ja Dokumentoinnin generoiminen, Parempi testaus, uusia kenttiä, Replay-systeemi |
 | 2.11. | 12 | Pelilogiikan kokonaan uudelleen tekeminen, kokonaan uudet kentät. |
-| yht   | 64   | | 
+| 16.11. | 3 | Uusi kenttä, bugifiksausta. |
+| yht   | 67   | | 
 

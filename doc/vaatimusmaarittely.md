@@ -39,10 +39,14 @@ Ohjelma lataa kentät automaattisesti. Ne tallennetaan tekstitiedostoina.
 
 ## Kehitysideat
 
-* kenttäeditori
+- [ ] main menu
 
-* musiikki
+- [ ] kenttäeditori
 
-* replayt ja high scoret
+- [ ] musiikki
 
-* Lisää erilaisia blockeja
+- [x] replayt
+
+- [ ] high scoret
+
+- [x] lisää palikkatyyppejä
